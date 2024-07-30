@@ -214,7 +214,6 @@ Item {
         height: parent.height * 0.125
 
         source:                     "qrc:/qml/VirtualTerminateButton.qml"
-        // active:                     _activeVehicle
-        active:                     true
+        active:                     _activeVehicle
     }
 }
