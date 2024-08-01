@@ -215,5 +215,11 @@ Item {
 
         source:                     "qrc:/qml/VirtualTerminateButton.qml"
         active:                     _activeVehicle
+
+        onLoaded: {
+            if (virtualTerminateButtonLoader.item) {
+                virtualTerminateButtonLoader.item.terminateRequest.connect(mainWindow.terminateRequest)
+            }
+        }
     }
 }
