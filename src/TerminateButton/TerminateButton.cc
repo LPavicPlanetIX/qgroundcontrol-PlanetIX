@@ -20,10 +20,11 @@ TerminateButton::TerminateButton(QObject* parent)
 
 void TerminateButton::setupSerialPort(SerialLink* serialLink) {
 
-    // connect(serialLink, &SerialLink::bytesReceived, this, &TerminateButton::handleSerialData);
+    connect(serialLink, &LinkInterface::bytesReceived, this, &TerminateButton::handleSerialData);
 }
 
-void TerminateButton::handleSerialData(const QByteArray& data) {
+void TerminateButton::handleSerialData(LinkInterface* link, const QByteArray& data) {
+    Q_UNUSED(link);
     if (data.contains("TERMINATE")) {
         emit terminateSignalReceived();
     }

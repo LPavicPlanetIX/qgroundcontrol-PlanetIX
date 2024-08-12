@@ -210,6 +210,7 @@ private:
     bool _portAlreadyConnected      (const QString& portName);
 
     bool isLinkTerminateButton      (void);
+    void handleTermination          (void);
 
     QMap<QString, int>  _autoconnectPortWaitList; ///< key: QGCSerialPortInfo::systemLocation, value: wait count
     QStringList         _commPortList;

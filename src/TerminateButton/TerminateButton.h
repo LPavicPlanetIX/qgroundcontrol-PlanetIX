@@ -30,5 +30,5 @@ signals:
     void terminateSignalReceived();
 
 private slots:
-    void handleSerialData(const QByteArray& data);
+    void handleSerialData(LinkInterface* link, const QByteArray& data);
 };

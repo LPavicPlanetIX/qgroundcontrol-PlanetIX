@@ -17,6 +17,7 @@
 #include "MultiVehicleManager.h"
 #include "DeviceInfo.h"
 #include "QGCLoggingCategory.h"
+#include "Vehicle.h"
 
 #ifdef QGC_ENABLE_BLUETOOTH
 #include "BluetoothLink.h"
@@ -171,8 +172,15 @@ bool LinkManager::createConnectedLink(SharedLinkConfigurationPtr& config, bool i
             return false;
         }
 
+        // TODO [lpavic]: refactor this
+        // TODO [lpavic]: instead checking for name, check the button's vendor id
         if (config->name() == "TerminateButton" && !_terminateButton) {
             _terminateButton = std::make_shared<TerminateButton>();
+            SerialLink* serialLink = qobject_cast<SerialLink*>(link.get());
+            if (serialLink) {
+                _terminateButton->setupSerialPort(serialLink);
+                connect(_terminateButton.get(), &TerminateButton::terminateSignalReceived, this, &LinkManager::handleTermination);
+            }
         }
         return true;
     }
@@ -1000,4 +1008,14 @@ bool LinkManager::isLinkTerminateButton(void)
     // }
 
     return false;
+}
+
+void LinkManager::handleTermination() {
+    qDebug() << "Termination signal received!";
+
+    // TODO [lpavic]: vehicle could be dangling pointer, soo how to manage that
+    Vehicle* vehicle = _toolbox->multiVehicleManager()->activeVehicle();
+    if (vehicle) {
+        vehicle->setTerminated();
+    }
 }
