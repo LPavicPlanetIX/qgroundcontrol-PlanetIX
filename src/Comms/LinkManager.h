@@ -13,6 +13,7 @@
 #include "LinkInterface.h"
 #include "QGCToolbox.h"
 #include "QmlObjectListModel.h"
+#include "TerminateButton.h"
 #include "UdpIODevice.h"
 #ifndef NO_SERIAL_LINK
     #include "QGCSerialPortInfo.h"
@@ -187,6 +188,8 @@ private:
 
 #ifndef NO_SERIAL_LINK
 
+    std::shared_ptr<TerminateButton> _terminateButton = nullptr;
+
 public:
     Q_PROPERTY(QStringList  serialBaudRates     READ serialBaudRates    CONSTANT)
     Q_PROPERTY(QStringList  serialPortStrings   READ serialPortStrings  NOTIFY commPortStringsChanged)
@@ -205,6 +208,8 @@ private:
     void _updateSerialPorts         (void);
     bool _allowAutoConnectToBoard   (QGCSerialPortInfo::BoardType_t boardType);
     bool _portAlreadyConnected      (const QString& portName);
+
+    bool isLinkTerminateButton      (void);
 
     QMap<QString, int>  _autoconnectPortWaitList; ///< key: QGCSerialPortInfo::systemLocation, value: wait count
     QStringList         _commPortList;
