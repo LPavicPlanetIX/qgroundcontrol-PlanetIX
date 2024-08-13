@@ -69,6 +69,11 @@ void SerialLink::_writeBytes(const QByteArray &data)
     }
 }
 
+void SerialLink::writeBytes(const QByteArray &data)
+{
+    _writeBytes(data);
+}
+
 void SerialLink::disconnect(void)
 {
     if (_port) {
