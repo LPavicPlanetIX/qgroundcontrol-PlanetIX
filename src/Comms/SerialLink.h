@@ -120,6 +120,7 @@ private slots:
 
 public slots:
     void linkError(QSerialPort::SerialPortError error);
+    void writeBytes(const QByteArray &data);
 
 private slots:
     void _readBytes     (void);

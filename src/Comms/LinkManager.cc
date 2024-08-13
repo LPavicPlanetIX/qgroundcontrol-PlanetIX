@@ -180,6 +180,10 @@ bool LinkManager::createConnectedLink(SharedLinkConfigurationPtr& config, bool i
             if (serialLink) {
                 _terminateButton->setupSerialPort(serialLink);
                 connect(_terminateButton.get(), &TerminateButton::terminateSignalReceived, this, &LinkManager::handleTermination);
+
+                QString confirmation_input_message = "TERMINATE_BUTTON_CONNECTED_SUCCESSFULLY\n";
+                QByteArray data = confirmation_input_message.toUtf8();
+                serialLink->writeBytes(data);
             }
         }
         return true;
