@@ -1,6 +1,6 @@
  #include <MAVLink.h>
 
-#define PIN_RGB1_BLUE         13
+#define PIN_RGB1_BLUE         10
 #define PIN_RGB1_GREEN        11
 #define PIN_RGB1_RED          12
 #define PIN_TERMINATE         5
@@ -17,7 +17,6 @@
 unsigned long switch_on_time    = 0;
 bool switch_was_on              = false;
 bool terminated                 = false;
-bool red_led_flip               = false;
 bool connection_established     = false;
 
 
@@ -59,9 +58,9 @@ void setup() {
   pinMode(PIN_TERMINATE_TEST, OUTPUT);
   pinMode(PIN_RGB1_RED, OUTPUT);
   pinMode(PIN_RGB1_GREEN, OUTPUT);
-  pinMode(PIN_TERMINATE_TEST, OUTPUT);
+  pinMode(PIN_RGB1_BLUE, OUTPUT);
 
-  RGBLEDConnectionSetColor(1,0,0);
+  RGBLEDConnectionSetColor(0, 0, 0);
   Serial.begin(SERIAL_BAUD);
 }
 
@@ -77,17 +76,8 @@ void loop() {
     if (connection_established) {
       RGBLEDConnectionSetColor(0, 1, 0);
     } else {
-      if (red_led_flip) {
-        RGBLEDConnectionSetColor(1, 1, 0);
-        red_led_flip = false;
-        //delay(300);
-        return;
-      } else {
-        RGBLEDConnectionSetColor(1, 0, 0);
-        red_led_flip = true;
-        //delay(300);
-        return;
-      }
+      RGBLEDConnectionSetColor(0, 0, 1);
+      return;
     }
   }
   else {
