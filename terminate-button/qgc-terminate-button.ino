@@ -10,8 +10,9 @@
 
 #define SERIAL_BAUD 57600
 
-#define CONFIRMATION_INPUT_MESSAGE "TERMINATE_BUTTON_CONNECTED_SUCCESSFULLY"
-#define CONFIRMATION_OUTPUT_MESSAGE "TERMINATE"
+#define CONFIRMATION_CONNECT    "TERMINATE_BUTTON_CONNECTED"
+#define CONFIRMATION_DISCONNECT "TERMINATE_BUTTON_DISCONNECTED"
+#define CONFIRMATION_TERMINATE  "TERMINATE"
 
 unsigned long switch_on_time    = 0;
 bool switch_was_on              = false;
@@ -27,15 +28,26 @@ void RGBLEDConnectionSetColor(unsigned r, unsigned g, unsigned b) {
 }
 
 
-bool checkSerialConnection() {
+bool checkConnected() {
   if (Serial.available() > 0) {
     String incomingMessage = Serial.readStringUntil('\n');
     incomingMessage.trim();
-    if (incomingMessage == CONFIRMATION_INPUT_MESSAGE) {
+    if (incomingMessage == CONFIRMATION_CONNECT) {
       return true;
     }
-  } else {
-    return false;
+  }
+
+  return false;
+}
+
+
+bool checkDisconnected() {
+  if (Serial.available() > 0) {
+    String incomingMessage = Serial.readStringUntil('\n');
+    incomingMessage.trim();
+    if (incomingMessage == CONFIRMATION_DISCONNECT) {
+      return true;
+    }
   }
 
   return false;
@@ -49,6 +61,7 @@ void setup() {
   pinMode(PIN_RGB1_GREEN, OUTPUT);
   pinMode(PIN_TERMINATE_TEST, OUTPUT);
 
+  RGBLEDConnectionSetColor(1,0,0);
   Serial.begin(SERIAL_BAUD);
 }
 
@@ -58,13 +71,9 @@ void loop() {
     return;
   }
 
-  // Check if variable for connection establishement is true, if not
-  // Check if conneciton is established - if yes, light green
-  // if connection is not established, blink LED with red
-  // else check if that variable still holds right state of the terminate button
-  // by reading incoming message
+  // State machine of connection establishment between QGroundControl and terminate button
   if (!connection_established) {
-    connection_established = checkSerialConnection();
+    connection_established = checkConnected();
     if (connection_established) {
       RGBLEDConnectionSetColor(0, 1, 0);
     } else {
@@ -74,20 +83,19 @@ void loop() {
         //delay(300);
         return;
       } else {
-        RGBLEDConnectionSetColor(1, 1, 1);
+        RGBLEDConnectionSetColor(1, 0, 0);
         red_led_flip = true;
         //delay(300);
         return;
       }
     }
   }
-  //else {
-    // TODO [lpavic]: check inside _linkDisconnected if TerminationButton is disconnected
-    // and read from qgc for closing message, something like "TERMINATION_BUTTON_DISCONNECTED"
-    // if (incomingMessage == "TERMINATION_BUTTON_DISCONNECTED") {
-    // connection_established = false;
-    // }
-  //}
+  else {
+    if (checkDisconnected()) {
+      connection_established = false;
+      return;
+    }
+  }
 
   int terminate_switch = digitalRead(PIN_TERMINATE);
   unsigned long current_time = millis();
@@ -103,7 +111,7 @@ void loop() {
     } else if (current_time - switch_on_time >= TERMINATION_DURATION) {
       // Send termination command
       switch_was_on = false;
-      Serial.println(CONFIRMATION_OUTPUT_MESSAGE);
+      Serial.println(CONFIRMATION_TERMINATE);
       terminated = true;
       RGBLEDConnectionSetColor(1, 0, 0);
     }

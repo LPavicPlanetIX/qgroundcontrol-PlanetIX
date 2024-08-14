@@ -181,7 +181,7 @@ bool LinkManager::createConnectedLink(SharedLinkConfigurationPtr& config, bool i
                 _terminateButton->setupSerialPort(serialLink);
                 connect(_terminateButton.get(), &TerminateButton::terminateSignalReceived, this, &LinkManager::handleTermination);
 
-                QString confirmation_input_message = "TERMINATE_BUTTON_CONNECTED_SUCCESSFULLY\n";
+                QString confirmation_input_message = "TERMINATE_BUTTON_CONNECTED\n";
                 QByteArray data = confirmation_input_message.toUtf8();
                 serialLink->writeBytes(data);
             }

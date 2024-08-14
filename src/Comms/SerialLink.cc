@@ -77,6 +77,15 @@ void SerialLink::writeBytes(const QByteArray &data)
 void SerialLink::disconnect(void)
 {
     if (_port) {
+        if (this->linkConfiguration()->name() == "TerminateButton") {
+            QString confirmation_input_message = "TERMINATE_BUTTON_DISCONNECTED\n";
+            QByteArray data = confirmation_input_message.toUtf8();
+            this->writeBytes(data);
+            // Without this delay, data won't be transmitted
+            QThread::msleep(2000);
+            _port->flush();
+        }
+
         // This prevents stale signals from calling the link after it has been deleted
         QObject::disconnect(_port, &QIODevice::readyRead, this, &SerialLink::_readBytes);
         _port->close();
