@@ -148,6 +148,11 @@ bool LinkManager::createConnectedLink(SharedLinkConfigurationPtr& config, bool i
         break;
     }
 
+    if (config->name() == "TerminateButton" && !_toolbox->multiVehicleManager()->activeVehicle()) {
+        qWarning() << "Connecting terminate button not possible if active vehicle not connected";
+        return false;
+    }
+
     if (link) {
         if (false == link->_allocateMavlinkChannel() ) {
             qCWarning(LinkManagerLog) << "Link failed to setup mavlink channels";
