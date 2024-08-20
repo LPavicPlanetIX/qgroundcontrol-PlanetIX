@@ -21,14 +21,22 @@ class TerminateButton : public QObject
     Q_OBJECT
 public:
     explicit TerminateButton(QObject* parent = nullptr);
-    void setupSerialPort(SerialLink* serialLink);
+    void setupSerialPort();
+
+    void setLink(const std::shared_ptr<SerialLink>& link) noexcept {
+        _link = link;
+    }
+    std::shared_ptr<SerialLink> getLink() const noexcept {
+        return _link;
+    }
 
 private:
-    SharedLinkConfigurationPtr _link;
+    std::shared_ptr<SerialLink> _link {nullptr};
 
 signals:
     void terminateSignalReceived();
 
 private slots:
     void handleSerialData(LinkInterface* link, const QByteArray& data);
+    void virtualTerminateSignalReceived();
 };

@@ -14,13 +14,18 @@
 #include "LinkManager.h"
 #include "LinkConfiguration.h"
 #include "SerialLink.h"
+#include "Vehicle.h"
+#include "MultiVehicleManager.h"
 
 TerminateButton::TerminateButton(QObject* parent)
-    : QObject(parent) {}
+    : QObject(parent) {
+    connect(qgcApp()->toolbox()->multiVehicleManager()->activeVehicle(), &Vehicle::terminatedChanged, this, &TerminateButton::virtualTerminateSignalReceived);
+}
 
-void TerminateButton::setupSerialPort(SerialLink* serialLink) {
-
-    connect(serialLink, &LinkInterface::bytesReceived, this, &TerminateButton::handleSerialData);
+void TerminateButton::setupSerialPort() {
+    if (_link) {
+        connect(_link.get(), &LinkInterface::bytesReceived, this, &TerminateButton::handleSerialData);
+    }
 }
 
 void TerminateButton::handleSerialData(LinkInterface* link, const QByteArray& data) {
@@ -28,4 +33,13 @@ void TerminateButton::handleSerialData(LinkInterface* link, const QByteArray& da
     if (data.contains("TERMINATE")) {
         emit terminateSignalReceived();
     }
+}
+
+void TerminateButton::virtualTerminateSignalReceived() {
+    qDebug() << "TEST-ERASE-THIS-LATER";
+    QString terminationMessage = "TERMINATE\n";
+    QByteArray data = terminationMessage.toUtf8();
+    _link->writeBytes(data);
+    QThread::msleep(5500);
+    _link->_hackAccessToPort()->flush();
 }

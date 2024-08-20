@@ -53,6 +53,20 @@ bool checkDisconnected() {
 }
 
 
+// In case that termination is called using virtual terminate button
+bool checkTerminated() {
+  if (Serial.available() > 0) {
+    String incomingMessage = Serial.readStringUntil('\n');
+    incomingMessage.trim();
+    if (incomingMessage == CONFIRMATION_TERMINATE) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+
 void setup() {
   pinMode(PIN_TERMINATE, INPUT_PULLUP);
   pinMode(PIN_TERMINATE_TEST, OUTPUT);
@@ -83,6 +97,10 @@ void loop() {
   else {
     if (checkDisconnected()) {
       connection_established = false;
+      return;
+    } else if (checkTerminated()) {
+      terminated = true;
+      RGBLEDConnectionSetColor(1, 0, 0);
       return;
     }
   }
