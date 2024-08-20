@@ -181,14 +181,15 @@ bool LinkManager::createConnectedLink(SharedLinkConfigurationPtr& config, bool i
         // TODO [lpavic]: instead checking for name, check the button's vendor id
         if (config->name() == "TerminateButton" && !_terminateButton) {
             _terminateButton = std::make_shared<TerminateButton>();
-            SerialLink* serialLink = qobject_cast<SerialLink*>(link.get());
+            std::shared_ptr<SerialLink> serialLink = std::dynamic_pointer_cast<SerialLink>(link);
             if (serialLink) {
-                _terminateButton->setupSerialPort(serialLink);
+                _terminateButton->setLink(serialLink);
+                _terminateButton->setupSerialPort();
                 connect(_terminateButton.get(), &TerminateButton::terminateSignalReceived, this, &LinkManager::handleTermination);
 
                 QString confirmation_input_message = "TERMINATE_BUTTON_CONNECTED\n";
                 QByteArray data = confirmation_input_message.toUtf8();
-                serialLink->writeBytes(data);
+                _terminateButton->getLink()->writeBytes(data);
             }
         }
         return true;

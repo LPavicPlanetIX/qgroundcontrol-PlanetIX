@@ -82,7 +82,7 @@ void SerialLink::disconnect(void)
             QByteArray data = confirmation_input_message.toUtf8();
             this->writeBytes(data);
             // Without this delay, data won't be transmitted
-            QThread::msleep(1000);
+            QThread::msleep(2000);
             _port->flush();
         }
 
