@@ -17,14 +17,16 @@
 #include "Vehicle.h"
 #include "MultiVehicleManager.h"
 
-TerminateButton::TerminateButton(QObject* parent)
-    : QObject(parent) {
-    connect(qgcApp()->toolbox()->multiVehicleManager()->activeVehicle(), &Vehicle::terminatedChanged, this, &TerminateButton::virtualTerminateSignalReceived);
+TerminateButton::TerminateButton(const std::shared_ptr<SerialLink>& link, QObject* parent)
+    : QObject(parent), _link(link) {
+        if (_link) {
+            connect(_link.get(), &LinkInterface::bytesReceived, this, &TerminateButton::handleSerialData);
+        }
 }
 
-void TerminateButton::setupSerialPort() {
+TerminateButton::~TerminateButton() {
     if (_link) {
-        connect(_link.get(), &LinkInterface::bytesReceived, this, &TerminateButton::handleSerialData);
+        disconnect(_link.get(), &LinkInterface::bytesReceived, this, &TerminateButton::handleSerialData);
     }
 }
 
@@ -35,11 +37,16 @@ void TerminateButton::handleSerialData(LinkInterface* link, const QByteArray& da
     }
 }
 
+/**
+ * @todo [lpavic]: LED RGB on RPi Terminate Button sometimes does not change color 
+ *                 eventhough termination is being called. This happens when virtual
+ *                 terminate button confirms termination. Same problem happens when
+ *                 terminate button is being disconnected inside Application Settings ->
+ *                 Comm Links 
+ */
 void TerminateButton::virtualTerminateSignalReceived() {
-    qDebug() << "TEST-ERASE-THIS-LATER";
     QString terminationMessage = "TERMINATE\n";
     QByteArray data = terminationMessage.toUtf8();
     _link->writeBytes(data);
-    QThread::msleep(5500);
     _link->_hackAccessToPort()->flush();
 }

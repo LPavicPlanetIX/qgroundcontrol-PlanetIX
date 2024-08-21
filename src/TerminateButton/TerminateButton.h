@@ -16,19 +16,22 @@
 #include "LinkConfiguration.h"
 #include "SerialLink.h"
 
+/**
+ * @todo [lpavic]: When active vehicle is connected along with terminate button, if the
+ *                 vehicle is disconnected, terminate buttons should be disconnected as well
+ */
 class TerminateButton : public QObject
 {
     Q_OBJECT
 public:
-    explicit TerminateButton(QObject* parent = nullptr);
-    void setupSerialPort();
+    explicit TerminateButton(const std::shared_ptr<SerialLink>& link, QObject* parent = nullptr);
+    ~TerminateButton();
 
-    void setLink(const std::shared_ptr<SerialLink>& link) noexcept {
-        _link = link;
-    }
     std::shared_ptr<SerialLink> getLink() const noexcept {
         return _link;
     }
+
+    void virtualTerminateSignalReceived();
 
 private:
     std::shared_ptr<SerialLink> _link {nullptr};
@@ -38,5 +41,4 @@ signals:
 
 private slots:
     void handleSerialData(LinkInterface* link, const QByteArray& data);
-    void virtualTerminateSignalReceived();
 };
