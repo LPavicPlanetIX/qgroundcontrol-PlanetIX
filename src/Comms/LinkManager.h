@@ -142,6 +142,7 @@ signals:
 
 private slots:
     void _linkDisconnected  (void);
+    void virtualTerminateSignalReceived(void);
 
 private:
     QmlObjectListModel* _qmlLinkConfigurations      (void) { return &_qmlConfigurations; }

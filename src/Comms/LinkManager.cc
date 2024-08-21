@@ -179,23 +179,29 @@ bool LinkManager::createConnectedLink(SharedLinkConfigurationPtr& config, bool i
 
         // TODO [lpavic]: refactor this
         // TODO [lpavic]: instead checking for name, check the button's vendor id
-        if (config->name() == "TerminateButton" && !_terminateButton) {
-            _terminateButton = std::make_shared<TerminateButton>();
-            std::shared_ptr<SerialLink> serialLink = std::dynamic_pointer_cast<SerialLink>(link);
-            if (serialLink) {
-                _terminateButton->setLink(serialLink);
-                _terminateButton->setupSerialPort();
-                connect(_terminateButton.get(), &TerminateButton::terminateSignalReceived, this, &LinkManager::handleTermination);
+        std::shared_ptr<SerialLink> serialLink = std::dynamic_pointer_cast<SerialLink>(link);
+        if (config->name() == "TerminateButton" && !_terminateButton && serialLink) {
+            _terminateButton = std::make_shared<TerminateButton>(serialLink);
+            
+            connect(_terminateButton.get(), &TerminateButton::terminateSignalReceived, this, &LinkManager::handleTermination);
+            connect(qgcApp()->toolbox()->multiVehicleManager()->activeVehicle(), &Vehicle::terminatedChanged, this, &LinkManager::virtualTerminateSignalReceived);
 
-                QString confirmation_input_message = "TERMINATE_BUTTON_CONNECTED\n";
-                QByteArray data = confirmation_input_message.toUtf8();
-                _terminateButton->getLink()->writeBytes(data);
-            }
+            QString confirmation_input_message = "TERMINATE_BUTTON_CONNECTED\n";
+            QByteArray data = confirmation_input_message.toUtf8();
+            _terminateButton->getLink()->writeBytes(data);
         }
         return true;
     }
 
     return false;
+}
+
+void LinkManager::virtualTerminateSignalReceived()
+{
+    if (_terminateButton)
+    {
+        _terminateButton->virtualTerminateSignalReceived();
+    }
 }
 
 SharedLinkInterfacePtr LinkManager::mavlinkForwardingLink()
@@ -248,6 +254,8 @@ void LinkManager::_linkDisconnected(void)
     for (int i=0; i<_rgLinks.count(); i++) {
         if (_rgLinks[i].get() == link) {
             if (_rgLinks[i].get()->linkConfiguration()->name() == "TerminateButton" && _terminateButton) {
+                disconnect(_terminateButton.get(), &TerminateButton::terminateSignalReceived, this, &LinkManager::handleTermination);
+                disconnect(qgcApp()->toolbox()->multiVehicleManager()->activeVehicle(), &Vehicle::terminatedChanged, this, &LinkManager::virtualTerminateSignalReceived);
                 _terminateButton.reset();
             }
             qCDebug(LinkManagerLog) << "LinkManager::_linkDisconnected" << _rgLinks[i]->linkConfiguration()->name() << _rgLinks[i].use_count();
@@ -1007,6 +1015,7 @@ bool LinkManager::_isSerialPortConnected(void)
 
 #endif // NO_SERIAL_LINK
 
+// TODO [lpavic]: Implement this function if defining Terminate Button connection would not be determined by its hardcoded name "TerminateButton"
 bool LinkManager::isLinkTerminateButton(void)
 {
     // const QList<SharedLinkInterfacePtr> links = qgcApp()->toolbox()->linkManager()->links();
