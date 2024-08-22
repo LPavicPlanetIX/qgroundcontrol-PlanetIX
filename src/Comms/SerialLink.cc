@@ -69,9 +69,47 @@ void SerialLink::_writeBytes(const QByteArray &data)
     }
 }
 
+void SerialLink::writeBytes(const QByteArray &data)
+{
+    _writeBytes(data);
+}
+
+/**
+ * @todo [lpavic]: When disconnecting inside Application Settings -> Comm Links, sometimes
+ *                 LED RGB on RPi (Terminate Button) changes status color, and sometimes
+ *                 does not. Probably the problem is that something else is done in
+ *                 background of serial connection. Maybe try to send shorter messages
+ *                 instead long "TERMINATE_BUTTON_DISCONNECTED\n" message. But then,
+ *                 the question is why does LED always change its color when connecting
+ */
 void SerialLink::disconnect(void)
 {
     if (_port) {
+        if (this->linkConfiguration()->name() == "TerminateButton") {
+            // 1. way
+            QString confirmation_input_message = "TERMINATE_BUTTON_DISCONNECTED\n";
+            QByteArray data = confirmation_input_message.toUtf8();
+            this->writeBytes(data);
+            // Approach with delay is undeterministic and sometimes it works, sometimes does not
+            // Should be done in different way
+            QThread::msleep(5000);
+            _port->flush();
+
+            // 2. way
+            // when this is not working, count is always equal to message length and
+            // this becomes infinite loop
+            // QString confirmation_input_message = "TERMINATE_BUTTON_DISCONNECTED\n";
+            // QByteArray data = confirmation_input_message.toUtf8();
+            // this->writeBytes(data);
+            // int count = _port->bytesToWrite();
+            // while (count > 0) {
+            //     count = _port->bytesToWrite();
+            //     this->writeBytes(data);
+            //     _port->flush();
+            // }
+
+        }
+
         // This prevents stale signals from calling the link after it has been deleted
         QObject::disconnect(_port, &QIODevice::readyRead, this, &SerialLink::_readBytes);
         _port->close();

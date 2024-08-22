@@ -17,6 +17,7 @@
 #include "MultiVehicleManager.h"
 #include "DeviceInfo.h"
 #include "QGCLoggingCategory.h"
+#include "Vehicle.h"
 
 #ifdef QGC_ENABLE_BLUETOOTH
 #include "BluetoothLink.h"
@@ -147,6 +148,11 @@ bool LinkManager::createConnectedLink(SharedLinkConfigurationPtr& config, bool i
         break;
     }
 
+    if (config->name() == "TerminateButton" && !_toolbox->multiVehicleManager()->activeVehicle()) {
+        qWarning() << "Connecting terminate button not possible if active vehicle not connected";
+        return false;
+    }
+
     if (link) {
         if (false == link->_allocateMavlinkChannel() ) {
             qCWarning(LinkManagerLog) << "Link failed to setup mavlink channels";
@@ -171,10 +177,31 @@ bool LinkManager::createConnectedLink(SharedLinkConfigurationPtr& config, bool i
             return false;
         }
 
+        // TODO [lpavic]: refactor this
+        // TODO [lpavic]: instead checking for name, check the button's vendor id
+        std::shared_ptr<SerialLink> serialLink = std::dynamic_pointer_cast<SerialLink>(link);
+        if (config->name() == "TerminateButton" && !_terminateButton && serialLink) {
+            _terminateButton = std::make_shared<TerminateButton>(serialLink);
+            
+            connect(_terminateButton.get(), &TerminateButton::terminateSignalReceived, this, &LinkManager::handleTermination);
+            connect(qgcApp()->toolbox()->multiVehicleManager()->activeVehicle(), &Vehicle::terminatedChanged, this, &LinkManager::virtualTerminateSignalReceived);
+
+            QString confirmation_input_message = "TERMINATE_BUTTON_CONNECTED\n";
+            QByteArray data = confirmation_input_message.toUtf8();
+            _terminateButton->getLink()->writeBytes(data);
+        }
         return true;
     }
 
     return false;
+}
+
+void LinkManager::virtualTerminateSignalReceived()
+{
+    if (_terminateButton)
+    {
+        _terminateButton->virtualTerminateSignalReceived();
+    }
 }
 
 SharedLinkInterfacePtr LinkManager::mavlinkForwardingLink()
@@ -226,6 +253,11 @@ void LinkManager::_linkDisconnected(void)
     link->_freeMavlinkChannel();
     for (int i=0; i<_rgLinks.count(); i++) {
         if (_rgLinks[i].get() == link) {
+            if (_rgLinks[i].get()->linkConfiguration()->name() == "TerminateButton" && _terminateButton) {
+                disconnect(_terminateButton.get(), &TerminateButton::terminateSignalReceived, this, &LinkManager::handleTermination);
+                disconnect(qgcApp()->toolbox()->multiVehicleManager()->activeVehicle(), &Vehicle::terminatedChanged, this, &LinkManager::virtualTerminateSignalReceived);
+                _terminateButton.reset();
+            }
             qCDebug(LinkManagerLog) << "LinkManager::_linkDisconnected" << _rgLinks[i]->linkConfiguration()->name() << _rgLinks[i].use_count();
             _rgLinks.removeAt(i);
             return;
@@ -982,3 +1014,27 @@ bool LinkManager::_isSerialPortConnected(void)
 }
 
 #endif // NO_SERIAL_LINK
+
+// TODO [lpavic]: Implement this function if defining Terminate Button connection would not be determined by its hardcoded name "TerminateButton"
+bool LinkManager::isLinkTerminateButton(void)
+{
+    // const QList<SharedLinkInterfacePtr> links = qgcApp()->toolbox()->linkManager()->links();
+    // for (const SharedLinkInterfacePtr& link : links) {
+    //     if (link->linkConfiguration()->name() == QString("TerminateButton")) {
+    //         _link = link->linkConfiguration();
+    //         return true;
+    //     }
+    // }
+
+    return false;
+}
+
+void LinkManager::handleTermination() {
+    qDebug() << "Termination signal received!";
+
+    // TODO [lpavic]: vehicle could be dangling pointer, soo how to manage that
+    Vehicle* vehicle = _toolbox->multiVehicleManager()->activeVehicle();
+    if (vehicle) {
+        vehicle->setTerminated();
+    }
+}
