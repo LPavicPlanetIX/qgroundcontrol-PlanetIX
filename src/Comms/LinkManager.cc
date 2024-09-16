@@ -186,7 +186,7 @@ bool LinkManager::createConnectedLink(SharedLinkConfigurationPtr& config, bool i
             connect(_terminateButton.get(), &TerminateButton::terminateSignalReceived, this, &LinkManager::handleTermination);
             connect(qgcApp()->toolbox()->multiVehicleManager()->activeVehicle(), &Vehicle::terminatedChanged, this, &LinkManager::virtualTerminateSignalReceived);
 
-            QString confirmation_input_message = "TERMINATE_BUTTON_CONNECTED\n";
+            QString confirmation_input_message = "TER0\n";
             QByteArray data = confirmation_input_message.toUtf8();
             _terminateButton->getLink()->writeBytes(data);
         }

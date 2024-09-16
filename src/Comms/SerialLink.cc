@@ -85,9 +85,17 @@ void SerialLink::writeBytes(const QByteArray &data)
 void SerialLink::disconnect(void)
 {
     if (_port) {
+        /**
+         * @todo [lpavic]: On RPi Picco (hardware terminate button) side, checking for
+         *                 this functionality is commented out for now since
+         *                 Serial.readStringUntil method on RPi Picco side is blocking
+         *                 when constantly checking the input serial message - the 
+         *                 problem is in huge delay of invocation of flight termination
+         *                 when hardware terminate button is being pressed
+         */
         if (this->linkConfiguration()->name() == "TerminateButton") {
             // 1. way
-            QString confirmation_input_message = "TERMINATE_BUTTON_DISCONNECTED\n";
+            QString confirmation_input_message = "TER2\n";
             QByteArray data = confirmation_input_message.toUtf8();
             this->writeBytes(data);
             // Approach with delay is undeterministic and sometimes it works, sometimes does not

@@ -32,20 +32,21 @@ TerminateButton::~TerminateButton() {
 
 void TerminateButton::handleSerialData(LinkInterface* link, const QByteArray& data) {
     Q_UNUSED(link);
-    if (data.contains("TERMINATE")) {
+    if (data.contains("TER1")) {
         emit terminateSignalReceived();
     }
 }
 
 /**
- * @todo [lpavic]: LED RGB on RPi Terminate Button sometimes does not change color 
- *                 eventhough termination is being called. This happens when virtual
- *                 terminate button confirms termination. Same problem happens when
- *                 terminate button is being disconnected inside Application Settings ->
- *                 Comm Links 
+ * @todo [lpavic]: On RPi Picco (hardware terminate button) side, checking for
+ *                 this functionality is commented out for now since
+ *                 Serial.readStringUntil method on RPi Picco side is blocking
+ *                 when constantly checking the input serial message - the 
+ *                 problem is in huge delay of invocation of flight termination
+ *                 when hardware terminate button is being pressed
  */
 void TerminateButton::virtualTerminateSignalReceived() {
-    QString terminationMessage = "TERMINATE\n";
+    QString terminationMessage = "TER1\n";
     QByteArray data = terminationMessage.toUtf8();
     _link->writeBytes(data);
     _link->_hackAccessToPort()->flush();
