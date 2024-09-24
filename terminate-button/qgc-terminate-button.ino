@@ -1,21 +1,20 @@
  #include <MAVLink.h>
 
-#define PIN_RGB1_BLUE         10
-#define PIN_RGB1_GREEN        11
-#define PIN_RGB1_RED          12
-#define PIN_TERMINATE         5
-#define PIN_TERMINATE_TEST    2
 
-#define TERMINATION_DURATION  1000 // milliseconds
+#define PIN_RGB1_BLUE           10
+#define PIN_RGB1_GREEN          11
+#define PIN_RGB1_RED            12
+#define PIN_TERMINATE           5
 
-#define SERIAL_BAUD 57600
+#define SERIAL_BAUD             57600
 
-#define CONFIRMATION_CONNECT    "TERMINATE_BUTTON_CONNECTED"
-#define CONFIRMATION_DISCONNECT "TERMINATE_BUTTON_DISCONNECTED"
-#define CONFIRMATION_TERMINATE  "TERMINATE"
+// connection established between QGC and term. butt.
+#define CONFIRMATION_CONNECT    "TER0"
+// termination command
+#define CONFIRMATION_TERMINATE  "TER1"
+// disconnection between qgc and term. butt.
+#define CONFIRMATION_DISCONNECT "TER2"
 
-unsigned long switch_on_time    = 0;
-bool switch_was_on              = false;
 bool terminated                 = false;
 bool connection_established     = false;
 
@@ -27,38 +26,11 @@ void RGBLEDConnectionSetColor(unsigned r, unsigned g, unsigned b) {
 }
 
 
-bool checkConnected() {
+bool checkStatus(String message) {
   if (Serial.available() > 0) {
     String incomingMessage = Serial.readStringUntil('\n');
     incomingMessage.trim();
-    if (incomingMessage == CONFIRMATION_CONNECT) {
-      return true;
-    }
-  }
-
-  return false;
-}
-
-
-bool checkDisconnected() {
-  if (Serial.available() > 0) {
-    String incomingMessage = Serial.readStringUntil('\n');
-    incomingMessage.trim();
-    if (incomingMessage == CONFIRMATION_DISCONNECT) {
-      return true;
-    }
-  }
-
-  return false;
-}
-
-
-// In case that termination is called using virtual terminate button
-bool checkTerminated() {
-  if (Serial.available() > 0) {
-    String incomingMessage = Serial.readStringUntil('\n');
-    incomingMessage.trim();
-    if (incomingMessage == CONFIRMATION_TERMINATE) {
+    if (incomingMessage == message) {
       return true;
     }
   }
@@ -68,13 +40,13 @@ bool checkTerminated() {
 
 
 void setup() {
-  pinMode(PIN_TERMINATE, INPUT_PULLUP);
-  pinMode(PIN_TERMINATE_TEST, OUTPUT);
-  pinMode(PIN_RGB1_RED, OUTPUT);
+  pinMode(PIN_TERMINATE,  INPUT_PULLUP);
+  pinMode(PIN_RGB1_RED,   OUTPUT);
   pinMode(PIN_RGB1_GREEN, OUTPUT);
-  pinMode(PIN_RGB1_BLUE, OUTPUT);
+  pinMode(PIN_RGB1_BLUE,  OUTPUT);
 
   RGBLEDConnectionSetColor(0, 0, 0);
+
   Serial.begin(SERIAL_BAUD);
 }
 
@@ -86,7 +58,7 @@ void loop() {
 
   // State machine of connection establishment between QGroundControl and terminate button
   if (!connection_established) {
-    connection_established = checkConnected();
+    connection_established = checkStatus(CONFIRMATION_CONNECT);
     if (connection_established) {
       RGBLEDConnectionSetColor(0, 1, 0);
     } else {
@@ -94,37 +66,31 @@ void loop() {
       return;
     }
   }
+  // TODO [lpavic]: very big delay when terminate button is pressed
+  // occurs because of this code, because of Serial.readStringUntil('\n')
+  // see how to handle this problems if needed 
+  // 1. LED on hardware terminate button won't be red when virtual
+  // terminate button invokes termination
+  // 2. when manually disconnecting the hardware terminate button
+  // inside Application setting of QGC, LED on hardware terminate
+  // button won't indicate that, it would still be green light 
+  /*
   else {
-    if (checkDisconnected()) {
+    if (checkStatus(CONFIRMATION_DISCONNECT)) {
       connection_established = false;
       return;
-    } else if (checkTerminated()) {
+    } else if (checkStatus(CONFIRMATION_TERMINATE)) {
       terminated = true;
       RGBLEDConnectionSetColor(1, 0, 0);
       return;
     }
   }
-
+*/
   int terminate_switch = digitalRead(PIN_TERMINATE);
-  unsigned long current_time = millis();
-
-  digitalWrite(PIN_TERMINATE_TEST, !terminate_switch);  
 
   if (terminate_switch == LOW) {
-    digitalWrite(PIN_TERMINATE_TEST, HIGH);
-
-    if (!switch_was_on) {
-      switch_was_on = true;
-      switch_on_time = current_time;
-    } else if (current_time - switch_on_time >= TERMINATION_DURATION) {
-      // Send termination command
-      switch_was_on = false;
       Serial.println(CONFIRMATION_TERMINATE);
       terminated = true;
       RGBLEDConnectionSetColor(1, 0, 0);
-    }
-  } else {
-    switch_was_on = false;
-    digitalWrite(PIN_TERMINATE_TEST, LOW);
   }
 }
