@@ -28,6 +28,8 @@ import QGroundControl.Palette
 import QGroundControl.ScreenTools
 import QGroundControl.Vehicle
 
+import MAVLink
+
 // This is the ui overlay layer for the widgets/tools for Fly View
 Item {
     id: _root
@@ -221,5 +223,111 @@ Item {
                 virtualTerminateButtonLoader.item.terminateRequest.connect(mainWindow.terminateRequest)
             }
         }
+    }
+
+    //-- Battery Indicator Not Pop Up
+    Rectangle {
+        anchors {
+           right: parent.right
+           top: parent.top
+           topMargin: parent.height * 0.02
+           rightMargin: parent.width * 0.01
+        }
+
+        color: "black"
+        width: 200
+        height: 200
+        opacity: 0.5
+
+        visible: _activeVehicle && _activeVehicle.batteries.count !== 0
+
+        Item {
+            id: batteryContentComponent
+
+            anchors.fill: parent // Make the loader fill the entire rectangle
+
+            ColumnLayout {
+                spacing: ScreenTools.defaultFontPixelHeight // / 2
+
+                property var _activeVehicle: QGroundControl.multiVehicleManager.activeVehicle
+
+                Component {
+                    id: batteryValuesAvailableComponent
+
+                    QtObject {
+                        property bool functionAvailable:         battery.function.rawValue !== MAVLink.MAV_BATTERY_FUNCTION_UNKNOWN
+                        property bool showFunction:              functionAvailable && battery.function.rawValue != MAVLink.MAV_BATTERY_FUNCTION_ALL
+                        property bool temperatureAvailable:      !isNaN(battery.temperature.rawValue)
+                        property bool currentAvailable:          !isNaN(battery.current.rawValue)
+                        property bool mahConsumedAvailable:      !isNaN(battery.mahConsumed.rawValue)
+                        property bool timeRemainingAvailable:    !isNaN(battery.timeRemaining.rawValue)
+                        property bool percentRemainingAvailable: !isNaN(battery.percentRemaining.rawValue)
+                        property bool chargeStateAvailable:      battery.chargeState.rawValue !== MAVLink.MAV_BATTERY_CHARGE_STATE_UNDEFINED
+                    }
+                }
+
+                Repeater {
+                    model: _activeVehicle ? _activeVehicle.batteries : 0
+
+                    SettingsGroupLayout {
+                        heading:        qsTr("Battery %1").arg(_activeVehicle.batteries.length === 1 ? qsTr("Status") : object.id.rawValue)
+                        contentSpacing: 0
+                        showDividers:   false
+
+                        property var batteryValuesAvailable: batteryValuesAvailableLoader.item
+
+                        Loader {
+                            id:                 batteryValuesAvailableLoader
+                            sourceComponent:    batteryValuesAvailableComponent
+
+                            property var battery: object
+                        }
+
+                        LabelledLabel {
+                            label:  qsTr("Charge State")
+                            labelText:  object.chargeState.enumStringValue
+                            visible:    batteryValuesAvailable.chargeStateAvailable
+                        }
+
+                        LabelledLabel {
+                            label:      qsTr("Remaining")
+                            labelText:  object.timeRemainingStr.value
+                            visible:    batteryValuesAvailable.timeRemainingAvailable
+                        }
+
+                        LabelledLabel {
+                            label:      qsTr("Remaining")
+                            labelText:  object.percentRemaining.valueString + " " + object.percentRemaining.units
+                            visible:    batteryValuesAvailable.percentRemainingAvailable
+                        }
+
+                        LabelledLabel {
+                            label:      qsTr("Voltage")
+                            labelText:  object.voltage.valueString + " " + object.voltage.units
+                        }
+
+                        LabelledLabel {
+                            label:      qsTr("Consumed")
+                            labelText:  object.mahConsumed.valueString + " " + object.mahConsumed.units
+                            visible:    batteryValuesAvailable.mahConsumedAvailable
+                        }
+
+                        LabelledLabel {
+                            label:      qsTr("Temperature")
+                            labelText:  object.temperature.valueString + " " + object.temperature.units
+                            visible:    batteryValuesAvailable.temperatureAvailable
+                        }
+
+                        LabelledLabel {
+                            label:      qsTr("Function")
+                            labelText:  object.function.enumStringValue
+                            visible:    batteryValuesAvailable.showFunction
+                        }
+                    }
+                }
+            }
+        }
+
+
     }
 }
