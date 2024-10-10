@@ -225,8 +225,10 @@ Item {
         }
     }
 
-    //-- Battery Indicator Not Pop Up
-    Rectangle {
+    // Battery Info
+    Item {
+        id: batteryContentComponent
+
         anchors {
            right: parent.right
            top: parent.top
@@ -234,100 +236,104 @@ Item {
            rightMargin: parent.width * 0.01
         }
 
-        color: "black"
-        width: 200
-        height: 200
-        opacity: 0.5
+        visible: _activeVehicle && _activeVehicle.batteries && _activeVehicle.batteries.count !== 0
 
-        visible: _activeVehicle && _activeVehicle.batteries.count !== 0
+        width:  batteryContentComponentColumnLayout.implicitWidth
+        height: _activeVehicle && _activeVehicle.batteries
+                ? batteryContentComponentColumnLayout.implicitHeight * _activeVehicle.batteries.count
+                : 0
 
-        Item {
-            id: batteryContentComponent
+        ColumnLayout {
+            id: batteryContentComponentColumnLayout
 
-            anchors.fill: parent // Make the loader fill the entire rectangle
+            spacing: ScreenTools.defaultFontPixelHeight / 2
 
-            ColumnLayout {
-                spacing: ScreenTools.defaultFontPixelHeight // / 2
+            Component {
+                id: batteryValuesAvailableComponent
 
-                property var _activeVehicle: QGroundControl.multiVehicleManager.activeVehicle
-
-                Component {
-                    id: batteryValuesAvailableComponent
-
-                    QtObject {
-                        property bool functionAvailable:         battery.function.rawValue !== MAVLink.MAV_BATTERY_FUNCTION_UNKNOWN
-                        property bool showFunction:              functionAvailable && battery.function.rawValue != MAVLink.MAV_BATTERY_FUNCTION_ALL
-                        property bool temperatureAvailable:      !isNaN(battery.temperature.rawValue)
-                        property bool currentAvailable:          !isNaN(battery.current.rawValue)
-                        property bool mahConsumedAvailable:      !isNaN(battery.mahConsumed.rawValue)
-                        property bool timeRemainingAvailable:    !isNaN(battery.timeRemaining.rawValue)
-                        property bool percentRemainingAvailable: !isNaN(battery.percentRemaining.rawValue)
-                        property bool chargeStateAvailable:      battery.chargeState.rawValue !== MAVLink.MAV_BATTERY_CHARGE_STATE_UNDEFINED
-                    }
+                QtObject {
+                    property bool functionAvailable:         battery.function.rawValue !== MAVLink.MAV_BATTERY_FUNCTION_UNKNOWN
+                    property bool showFunction:              functionAvailable && battery.function.rawValue != MAVLink.MAV_BATTERY_FUNCTION_ALL
+                    property bool temperatureAvailable:      !isNaN(battery.temperature.rawValue)
+                    property bool currentAvailable:          !isNaN(battery.current.rawValue)
+                    property bool mahConsumedAvailable:      !isNaN(battery.mahConsumed.rawValue)
+                    property bool timeRemainingAvailable:    !isNaN(battery.timeRemaining.rawValue)
+                    property bool percentRemainingAvailable: !isNaN(battery.percentRemaining.rawValue)
+                    property bool chargeStateAvailable:      battery.chargeState.rawValue !== MAVLink.MAV_BATTERY_CHARGE_STATE_UNDEFINED
                 }
+            }
 
-                Repeater {
-                    model: _activeVehicle ? _activeVehicle.batteries : 0
+            Repeater {
+                model: _activeVehicle ? _activeVehicle.batteries : 0
 
-                    SettingsGroupLayout {
-                        heading:        qsTr("Battery %1").arg(_activeVehicle.batteries.length === 1 ? qsTr("Status") : object.id.rawValue)
-                        contentSpacing: 0
-                        showDividers:   false
+                SettingsGroupLayout {
+                    heading:         qsTr("Battery %1").arg(_activeVehicle.batteries.length === 1 ? qsTr("Status") : object.id.rawValue)
+                    contentSpacing:  0
+                    showDividers:    false
+                    layoutColor:     "black"
+                    headingFontSize: ScreenTools.defaultFontPointSize * incrementFontIndex
 
-                        property var batteryValuesAvailable: batteryValuesAvailableLoader.item
+                    property var batteryValuesAvailable: batteryValuesAvailableLoader.item
+                    property real incrementFontIndex:    1.15
+                    Loader {
+                        id:                 batteryValuesAvailableLoader
+                        sourceComponent:    batteryValuesAvailableComponent
 
-                        Loader {
-                            id:                 batteryValuesAvailableLoader
-                            sourceComponent:    batteryValuesAvailableComponent
+                        property var battery: object
+                    }
 
-                            property var battery: object
-                        }
+                    LabelledLabel {
+                        label:      qsTr("Charge State")
+                        labelText:  object.chargeState.enumStringValue
+                        visible:    batteryValuesAvailable.chargeStateAvailable
+                        fontSize:   ScreenTools.defaultFontPointSize * incrementFontIndex
+                    }
 
-                        LabelledLabel {
-                            label:  qsTr("Charge State")
-                            labelText:  object.chargeState.enumStringValue
-                            visible:    batteryValuesAvailable.chargeStateAvailable
-                        }
+                    LabelledLabel {
+                        label:      qsTr("Remaining")
+                        labelText:  object.timeRemainingStr.value
+                        visible:    batteryValuesAvailable.timeRemainingAvailable
+                        fontSize:   ScreenTools.defaultFontPointSize * incrementFontIndex
+                    }
 
-                        LabelledLabel {
-                            label:      qsTr("Remaining")
-                            labelText:  object.timeRemainingStr.value
-                            visible:    batteryValuesAvailable.timeRemainingAvailable
-                        }
+                    LabelledLabel {
+                        label:      qsTr("Remaining")
+                        labelText:  object.percentRemaining.valueString + " " + object.percentRemaining.units
+                        visible:    batteryValuesAvailable.percentRemainingAvailable
+                        fontSize: ScreenTools.defaultFontPointSize * incrementFontIndex
+                    }
 
-                        LabelledLabel {
-                            label:      qsTr("Remaining")
-                            labelText:  object.percentRemaining.valueString + " " + object.percentRemaining.units
-                            visible:    batteryValuesAvailable.percentRemainingAvailable
-                        }
+                    LabelledLabel {
+                        label:      qsTr("Voltage")
+                        labelText:  object.voltage.valueString + " " + object.voltage.units
+                        fontSize:   ScreenTools.defaultFontPointSize * incrementFontIndex
+                    }
 
-                        LabelledLabel {
-                            label:      qsTr("Voltage")
-                            labelText:  object.voltage.valueString + " " + object.voltage.units
-                        }
+                    LabelledLabel {
+                        label:      qsTr("Consumed")
+                        labelText:  object.mahConsumed.valueString + " " + object.mahConsumed.units
+                        visible:    batteryValuesAvailable.mahConsumedAvailable
+                        fontSize:   ScreenTools.defaultFontPointSize * incrementFontIndex
+                    }
 
-                        LabelledLabel {
-                            label:      qsTr("Consumed")
-                            labelText:  object.mahConsumed.valueString + " " + object.mahConsumed.units
-                            visible:    batteryValuesAvailable.mahConsumedAvailable
-                        }
+                    LabelledLabel {
+                        label:     qsTr("Temperature")
+                        labelText: object.temperature.valueString + " " + object.temperature.units
+                        visible:   false // Planet IX: it is not used // batteryValuesAvailable.temperatureAvailable
+                        fontSize:  ScreenTools.defaultFontPointSize * incrementFontIndex
+                    }
 
-                        LabelledLabel {
-                            label:      qsTr("Temperature")
-                            labelText:  object.temperature.valueString + " " + object.temperature.units
-                            visible:    batteryValuesAvailable.temperatureAvailable
-                        }
-
-                        LabelledLabel {
-                            label:      qsTr("Function")
-                            labelText:  object.function.enumStringValue
-                            visible:    batteryValuesAvailable.showFunction
-                        }
+                    LabelledLabel {
+                        label:      qsTr("Function")
+                        labelText:  object.function.enumStringValue
+                        visible:    batteryValuesAvailable.showFunction
+                        fontSize:   ScreenTools.defaultFontPointSize * incrementFontIndex
                     }
                 }
             }
         }
-
-
     }
+
+
+
 }

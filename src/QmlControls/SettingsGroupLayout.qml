@@ -18,8 +18,10 @@ ColumnLayout {
     property string heading
     property string headingDescription
     property bool   showDividers:       true
+    property color  layoutColor:        "transparent"
 
-    property real _margins: ScreenTools.defaultFontPixelHeight / 2
+    property real _margins:        ScreenTools.defaultFontPixelHeight / 2
+    property real headingFontSize: ScreenTools.defaultFontPointSize + 1
 
     ColumnLayout {
         Layout.leftMargin:  _margins
@@ -27,10 +29,21 @@ ColumnLayout {
         spacing:            0
         visible:            heading !== ""
 
+        Rectangle {
+            color:  layoutColor
+            radius: 5
+            width:  headingQGCLabel.implicitWidth + _margins
+            height: headingQGCLabel.implicitHeight + _margins
+
         QGCLabel { 
-            text:           heading
-            font.pointSize: ScreenTools.defaultFontPointSize + 1
-            font.bold:      true
+                id:                  headingQGCLabel
+                text:                heading
+                font.pointSize:      headingFontSize
+                font.bold:           true
+                anchors.centerIn:    parent
+                horizontalAlignment: Text.AlignHCenter
+                verticalAlignment:   Text.AlignVCenter
+            }
         }
 
         QGCLabel { 
@@ -47,7 +60,7 @@ ColumnLayout {
         Layout.fillWidth:   true
         implicitWidth:      _contentLayout.implicitWidth + (_margins * 2)
         implicitHeight:     _contentLayout.implicitHeight + (_margins * 2)
-        color:              "transparent"
+        color:              layoutColor
         border.color:       QGroundControl.globalPalette.groupBorder
         border.width:       1
         radius:             ScreenTools.defaultFontPixelHeight / 2
