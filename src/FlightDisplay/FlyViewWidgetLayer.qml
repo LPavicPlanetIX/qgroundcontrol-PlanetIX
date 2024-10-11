@@ -335,20 +335,24 @@ Item {
     }
 
     // Message Console
-    Item {
-        id:     messageContentComponent
+    QGCFlickable {
+        id:     scrollableMessageArea
         width:  parent.width / 3
         height: parent.height / 5
         anchors {
-            bottom: parent.bottom
-            bottomMargin: 0
+            bottom:           parent.bottom
+            bottomMargin:     parent.height * 0.01
             horizontalCenter: parent.horizontalCenter
         }
-        visible: _activeVehicle
+        visible: true
 
         property var qgcPal:         QGroundControl.globalPalette
 
-        TextArea {
+        contentWidth:  backgroundOfMessageText.width
+        contentHeight: backgroundOfMessageText.height
+        clip:          true
+
+        TextArea.flickable: TextArea {
             id:                     messageText
             width:                  parent.width
             height:                 parent.height
@@ -358,30 +362,35 @@ Item {
             placeholderText:        qsTr("No Messages")
             placeholderTextColor:   qgcPal.text
             padding:                0
-            background: Rectangle {
-                width:  parent.width
-                height: parent.height
-                color:  "black"
-            }
+            background:             Rectangle {
+                                        id: backgroundOfMessageText
+                                        width:  scrollableMessageArea.width
+                                        height: scrollableMessageArea.height
+                                        color:  "black"
+                                    }
+            visible:                true
+            focus:                  true
 
-            property bool   _noMessages:    messageText.length === 0
-            property var    _fact:          null
+            property bool _noMessages: messageText.length === 0
+            property var  _fact:       null
 
             function formatMessage(message) {
-                message = message.replace(new RegExp("<#E>", "g"), "color: " + qgcPal.warningText + "; font: " + (ScreenTools.defaultFontPointSize.toFixed(0) - 1) + "pt monospace;");
-                message = message.replace(new RegExp("<#I>", "g"), "color: " + qgcPal.warningText + "; font: " + (ScreenTools.defaultFontPointSize.toFixed(0) - 1) + "pt monospace;");
-                message = message.replace(new RegExp("<#N>", "g"), "color: " + qgcPal.text + "; font: " + (ScreenTools.defaultFontPointSize.toFixed(0) - 1) + "pt monospace;");
+                message = message.replace(new RegExp("<#E>", "g"), "color: " + qgcPal.warningText + "; font: " + (ScreenTools.defaultFontPointSize.toFixed(0)) + "pt monospace;");
+                message = message.replace(new RegExp("<#I>", "g"), "color: " + qgcPal.warningText + "; font: " + (ScreenTools.defaultFontPointSize.toFixed(0)) + "pt monospace;");
+                message = message.replace(new RegExp("<#N>", "g"), "color: " + qgcPal.text + "; font: " + (ScreenTools.defaultFontPointSize.toFixed(0)) + "pt monospace;");
                 return message;
             }
 
             Component.onCompleted: {
-                messageText.text = formatMessage(_activeVehicle.formattedMessages)
-                _activeVehicle.resetAllMessages()
+                if (_activeVehicle && _activeVehicle.formattedMessages) {
+                    messageText.text = messageText.formatMessage(_activeVehicle.formattedMessages)
+                    _activeVehicle.resetAllMessages()
+                }
             }
 
             Connections {
                 target:                 _activeVehicle
-                onNewFormattedMessage: (formattedMessage) => { messageText.insert(0, messageText.formatMessage(formattedMessage)) }
+                onNewFormattedMessage: (formattedMessage) => { messageText.insert(messageText.length, messageText.formatMessage(formattedMessage)) }
             }
 
             FactPanelController {
