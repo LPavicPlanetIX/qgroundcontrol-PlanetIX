@@ -338,7 +338,7 @@ Item {
     QGCFlickable {
         id:     scrollableMessageArea
         width:  parent.width / 3
-        height: parent.height / 5
+        height: parent.height / 10
         anchors {
             bottom:           parent.bottom
             bottomMargin:     parent.height * 0.01
