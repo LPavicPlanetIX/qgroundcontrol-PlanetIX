@@ -17,58 +17,103 @@ import QGroundControl.FlightMap
 import QGroundControl.Palette
 import QGroundControl.ScreenTools
 
+import MAVLink
+
 ColumnLayout {
     width: _rightPanelWidth
+    
 
-    RowLayout {
-        id:                 multiVehiclePanelSelector
+    // Battery Info
+    Item {
+        id: batteryContentComponent
         Layout.alignment:   Qt.AlignTop
-        spacing:            ScreenTools.defaultFontPixelWidth
-        visible:            QGroundControl.multiVehicleManager.vehicles.count > 1 && QGroundControl.corePlugin.options.flyView.showMultiVehicleList
 
-        QGCMapPalette { id: mapPal; lightColors: true }
+        visible: _activeVehicle && _activeVehicle.batteries && _activeVehicle.batteries.count !== 0
 
-        QGCRadioButton {
-            id:             singleVehicleRadio
-            text:           qsTr("Single")
-            checked:        _showSingleVehicleUI
-            onClicked:      _showSingleVehicleUI = true
-            textColor:      mapPal.text
-        }
+        ColumnLayout {
+            id: batteryContentComponentColumnLayout
 
-        QGCRadioButton {
-            text:           qsTr("Multi-Vehicle")
-            textColor:      mapPal.text
-            onClicked:      _showSingleVehicleUI = false
-        }
-    }
+            spacing: ScreenTools.defaultFontPixelHeight / 2
 
-    TerrainProgress {
-        Layout.alignment:       Qt.AlignTop
-        Layout.preferredWidth:  _rightPanelWidth
-    }
+            Component {
+                id: batteryValuesAvailableComponent
 
-    // We use a Loader to load the photoVideoControlComponent only when the active vehicle is not null
-    // This make it easier to implement PhotoVideoControl without having to check for the mavlink camera
-    // to be null all over the place
-    Loader {
-        id:                 photoVideoControlLoader
-        Layout.alignment:   Qt.AlignTop | Qt.AlignRight
-        sourceComponent:    globals.activeVehicle && _showSingleVehicleUI ? photoVideoControlComponent : undefined
+                QtObject {
+                    property bool functionAvailable:         battery.function.rawValue !== MAVLink.MAV_BATTERY_FUNCTION_UNKNOWN
+                    property bool showFunction:              functionAvailable && battery.function.rawValue != MAVLink.MAV_BATTERY_FUNCTION_ALL
+                    property bool temperatureAvailable:      !isNaN(battery.temperature.rawValue)
+                    property bool currentAvailable:          !isNaN(battery.current.rawValue)
+                    property bool mahConsumedAvailable:      !isNaN(battery.mahConsumed.rawValue)
+                    property bool timeRemainingAvailable:    !isNaN(battery.timeRemaining.rawValue)
+                    property bool percentRemainingAvailable: !isNaN(battery.percentRemaining.rawValue)
+                    property bool chargeStateAvailable:      battery.chargeState.rawValue !== MAVLink.MAV_BATTERY_CHARGE_STATE_UNDEFINED
+                }
+            }
 
-        property real rightEdgeCenterInset: visible ? parent.width - x : 0
+            Repeater {
+                model: _activeVehicle ? _activeVehicle.batteries : 0
 
-        Component {
-            id: photoVideoControlComponent
+                SettingsGroupLayout {
+                    heading:         qsTr("Battery %1").arg(_activeVehicle.batteries.length === 1 ? qsTr("Status") : object.id.rawValue)
+                    contentSpacing:  0
+                    showDividers:    false
+                    layoutColor:     qgcPal.window
+                    headingFontSize: ScreenTools.defaultFontPointSize * incrementFontIndex
 
-            PhotoVideoControl {
+                    property var batteryValuesAvailable: batteryValuesAvailableLoader.item
+                    property real incrementFontIndex:    1.15
+                    Loader {
+                        id:                 batteryValuesAvailableLoader
+                        sourceComponent:    batteryValuesAvailableComponent
+
+                        property var battery: object
+                    }
+
+                    LabelledLabel {
+                        label:      qsTr("Charge State")
+                        labelText:  object.chargeState.enumStringValue
+                        visible:    batteryValuesAvailable.chargeStateAvailable
+                        fontSize:   ScreenTools.defaultFontPointSize * incrementFontIndex
+                    }
+
+                    LabelledLabel {
+                        label:      qsTr("Remaining")
+                        labelText:  object.timeRemainingStr.value
+                        visible:    batteryValuesAvailable.timeRemainingAvailable
+                        fontSize:   ScreenTools.defaultFontPointSize * incrementFontIndex
+                    }
+
+                    LabelledLabel {
+                        label:      qsTr("Remaining")
+                        labelText:  object.percentRemaining.valueString + " " + object.percentRemaining.units
+                        visible:    batteryValuesAvailable.percentRemainingAvailable
+                        fontSize: ScreenTools.defaultFontPointSize * incrementFontIndex
+                    }
+
+                    LabelledLabel {
+                        label:      qsTr("Voltage")
+                        labelText:  object.voltage.value.toFixed(1) + " " + object.voltage.units
+                        fontSize:   ScreenTools.defaultFontPointSize * incrementFontIndex
+                        labelColor: (object.voltage.value < 46) ? "red" : ((object.voltage.value < 47) ? "yellow" : "green")
+                    }
+
+                    LabelledLabel {
+                        label:     qsTr("Current")
+                        labelText: object.current.value.toFixed(1) + " " + object.current.units
+                        visible:   batteryValuesAvailable.currentAvailable
+                        fontSize:  ScreenTools.defaultFontPointSize * incrementFontIndex
+                    }
+
+                    LabelledLabel {
+                        label:      qsTr("Consumed")
+                        // object.mahConsumed.units is in mAh, and Ah unit is desirable, so divide by 1000
+                        labelText:  (object.mahConsumed.value / 1000).toFixed(1) + " " + "Ah"
+                        visible:    batteryValuesAvailable.mahConsumedAvailable
+                        fontSize:   ScreenTools.defaultFontPointSize * incrementFontIndex
+                        labelColor: ((object.mahConsumed.value / 1000) < 15) ? "green" : (((object.mahConsumed.value / 1000) < 18) ? "yellow" : "red")
+                    }
+                }
             }
         }
-    }
-
-    MultiVehicleList {
-        Layout.preferredWidth:  _rightPanelWidth
-        Layout.fillHeight:      true
-        visible:                !_showSingleVehicleUI
     }
 }

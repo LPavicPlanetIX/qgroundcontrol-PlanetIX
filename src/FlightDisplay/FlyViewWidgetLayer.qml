@@ -28,8 +28,6 @@ import QGroundControl.Palette
 import QGroundControl.ScreenTools
 import QGroundControl.Vehicle
 
-import MAVLink
-
 // This is the ui overlay layer for the widgets/tools for Fly View
 Item {
     id: _root
@@ -48,7 +46,7 @@ Item {
     property real   _margins:               ScreenTools.defaultFontPixelWidth / 2
     property real   _toolsMargin:           ScreenTools.defaultFontPixelWidth * 0.75
     property rect   _centerViewport:        Qt.rect(0, 0, width, height)
-    property real   _rightPanelWidth:       ScreenTools.defaultFontPixelWidth * 30
+    property real   _rightPanelWidth:       ScreenTools.defaultFontPixelWidth * 35
     property alias  _gripperMenu:           gripperOptions
     property real   _layoutMargin:          ScreenTools.defaultFontPixelWidth * 0.75
     property bool   _layoutSpacing:         ScreenTools.defaultFontPixelWidth
@@ -221,111 +219,6 @@ Item {
         onLoaded: {
             if (virtualTerminateButtonLoader.item) {
                 virtualTerminateButtonLoader.item.terminateRequest.connect(mainWindow.terminateRequest)
-            }
-        }
-    }
-
-    // Battery Info
-    Item {
-        id: batteryContentComponent
-
-        anchors {
-           right: parent.right
-           top: parent.top
-           topMargin: parent.height * 0.02
-           rightMargin: parent.width * 0.01
-        }
-
-        visible: _activeVehicle && _activeVehicle.batteries && _activeVehicle.batteries.count !== 0
-
-        width:  batteryContentComponentColumnLayout.implicitWidth
-        height: _activeVehicle && _activeVehicle.batteries
-                ? batteryContentComponentColumnLayout.implicitHeight * _activeVehicle.batteries.count
-                : 0
-
-        ColumnLayout {
-            id: batteryContentComponentColumnLayout
-
-            spacing: ScreenTools.defaultFontPixelHeight / 2
-
-            Component {
-                id: batteryValuesAvailableComponent
-
-                QtObject {
-                    property bool functionAvailable:         battery.function.rawValue !== MAVLink.MAV_BATTERY_FUNCTION_UNKNOWN
-                    property bool showFunction:              functionAvailable && battery.function.rawValue != MAVLink.MAV_BATTERY_FUNCTION_ALL
-                    property bool temperatureAvailable:      !isNaN(battery.temperature.rawValue)
-                    property bool currentAvailable:          !isNaN(battery.current.rawValue)
-                    property bool mahConsumedAvailable:      !isNaN(battery.mahConsumed.rawValue)
-                    property bool timeRemainingAvailable:    !isNaN(battery.timeRemaining.rawValue)
-                    property bool percentRemainingAvailable: !isNaN(battery.percentRemaining.rawValue)
-                    property bool chargeStateAvailable:      battery.chargeState.rawValue !== MAVLink.MAV_BATTERY_CHARGE_STATE_UNDEFINED
-                }
-            }
-
-            Repeater {
-                model: _activeVehicle ? _activeVehicle.batteries : 0
-
-                SettingsGroupLayout {
-                    heading:         qsTr("Battery %1").arg(_activeVehicle.batteries.length === 1 ? qsTr("Status") : object.id.rawValue)
-                    contentSpacing:  0
-                    showDividers:    false
-                    layoutColor:     "black"
-                    headingFontSize: ScreenTools.defaultFontPointSize * incrementFontIndex
-
-                    property var batteryValuesAvailable: batteryValuesAvailableLoader.item
-                    property real incrementFontIndex:    1.15
-                    Loader {
-                        id:                 batteryValuesAvailableLoader
-                        sourceComponent:    batteryValuesAvailableComponent
-
-                        property var battery: object
-                    }
-
-                    LabelledLabel {
-                        label:      qsTr("Charge State")
-                        labelText:  object.chargeState.enumStringValue
-                        visible:    batteryValuesAvailable.chargeStateAvailable
-                        fontSize:   ScreenTools.defaultFontPointSize * incrementFontIndex
-                    }
-
-                    LabelledLabel {
-                        label:      qsTr("Remaining")
-                        labelText:  object.timeRemainingStr.value
-                        visible:    batteryValuesAvailable.timeRemainingAvailable
-                        fontSize:   ScreenTools.defaultFontPointSize * incrementFontIndex
-                    }
-
-                    LabelledLabel {
-                        label:      qsTr("Remaining")
-                        labelText:  object.percentRemaining.valueString + " " + object.percentRemaining.units
-                        visible:    batteryValuesAvailable.percentRemainingAvailable
-                        fontSize: ScreenTools.defaultFontPointSize * incrementFontIndex
-                    }
-
-                    LabelledLabel {
-                        label:      qsTr("Voltage")
-                        labelText:  object.voltage.value.toFixed(1) + " " + object.voltage.units
-                        fontSize:   ScreenTools.defaultFontPointSize * incrementFontIndex
-                        labelColor: (object.voltage.value < 46) ? "red" : ((object.voltage.value < 47) ? "yellow" : "green")
-                    }
-
-                    LabelledLabel {
-                        label:     qsTr("Current")
-                        labelText: object.current.value.toFixed(1) + " " + object.current.units
-                        visible:   batteryValuesAvailable.currentAvailable
-                        fontSize:  ScreenTools.defaultFontPointSize * incrementFontIndex
-                    }
-
-                    LabelledLabel {
-                        label:      qsTr("Consumed")
-                        // object.mahConsumed.units is in mAh, and Ah unit is desirable, so divide by 1000
-                        labelText:  (object.mahConsumed.value / 1000).toFixed(1) + " " + "Ah"
-                        visible:    batteryValuesAvailable.mahConsumedAvailable
-                        fontSize:   ScreenTools.defaultFontPointSize * incrementFontIndex
-                        labelColor: ((object.mahConsumed.value / 1000) < 15) ? "green" : (((object.mahConsumed.value / 1000) < 18) ? "yellow" : "red")
-                    }
-                }
             }
         }
     }
