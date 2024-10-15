@@ -162,27 +162,6 @@ SettingsPage {
 
     SettingsGroupLayout {
         Layout.fillWidth:   true
-        heading:            qsTr("Virtual Joystick")
-        visible:            _virtualJoystick.visible || _virtualJoystickAutoCenterThrottle.visible
-
-        FactCheckBoxSlider {
-            Layout.fillWidth:   true
-            text:               qsTr("Enabled")
-            visible:            _virtualJoystick.visible
-            fact:               _virtualJoystick
-        }
-
-        FactCheckBoxSlider {
-            Layout.fillWidth:   true
-            text:               qsTr("Auto-Center Throttle")
-            visible:            _virtualJoystickAutoCenterThrottle.visible
-            enabled:            _virtualJoystick.rawValue
-            fact:               _virtualJoystickAutoCenterThrottle
-        }
-    }
-
-    SettingsGroupLayout {
-        Layout.fillWidth:   true
         heading:            qsTr("Instrument Panel")
         visible:            _showAdditionalIndicatorsCompass.visible || _lockNoseUpCompass.visible
 

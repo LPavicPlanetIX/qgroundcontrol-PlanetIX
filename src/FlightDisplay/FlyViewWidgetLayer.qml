@@ -58,16 +58,16 @@ Item {
         id:                     _totalToolInsets
         leftEdgeTopInset:       toolStrip.leftEdgeTopInset
         leftEdgeCenterInset:    toolStrip.leftEdgeCenterInset
-        leftEdgeBottomInset:    virtualJoystickMultiTouch.visible ? virtualJoystickMultiTouch.leftEdgeBottomInset : parentToolInsets.leftEdgeBottomInset
+        leftEdgeBottomInset:    parentToolInsets.leftEdgeBottomInset
         rightEdgeTopInset:      topRightColumnLayout.rightEdgeTopInset
         rightEdgeCenterInset:   topRightColumnLayout.rightEdgeCenterInset
         rightEdgeBottomInset:   bottomRightRowLayout.rightEdgeBottomInset
         topEdgeLeftInset:       toolStrip.topEdgeLeftInset
         topEdgeCenterInset:     mapScale.topEdgeCenterInset
         topEdgeRightInset:      topRightColumnLayout.topEdgeRightInset
-        bottomEdgeLeftInset:    virtualJoystickMultiTouch.visible ? virtualJoystickMultiTouch.bottomEdgeLeftInset : parentToolInsets.bottomEdgeLeftInset
+        bottomEdgeLeftInset:    parentToolInsets.bottomEdgeLeftInset
         bottomEdgeCenterInset:  bottomRightRowLayout.bottomEdgeCenterInset
-        bottomEdgeRightInset:   virtualJoystickMultiTouch.visible ? virtualJoystickMultiTouch.bottomEdgeRightInset : bottomRightRowLayout.bottomEdgeRightInset
+        bottomEdgeRightInset:   bottomRightRowLayout.bottomEdgeRightInset
     }
 
     FlyViewTopRightColumnLayout {
@@ -111,50 +111,9 @@ Item {
         utmspSliderTrigger:         utmspActTrigger
     }
 
-    //-- Virtual Joystick
-    Loader {
-        id:                         virtualJoystickMultiTouch
-        z:                          QGroundControl.zOrderTopMost + 1
-        anchors.right:              parent.right
-        anchors.rightMargin:        anchors.leftMargin
-        height:                     Math.min(parent.height * 0.25, ScreenTools.defaultFontPixelWidth * 16)
-        visible:                    _virtualJoystickEnabled && !QGroundControl.videoManager.fullScreen && !(_activeVehicle ? _activeVehicle.usingHighLatencyLink : false)
-        anchors.bottom:             parent.bottom
-        anchors.bottomMargin:       bottomLoaderMargin
-        anchors.left:               parent.left   
-        anchors.leftMargin:         ( y > toolStrip.y + toolStrip.height ? toolStrip.width / 2 : toolStrip.width * 1.05 + toolStrip.x) 
-        source:                     "qrc:/qml/VirtualJoystick.qml"
-        active:                     _virtualJoystickEnabled && !(_activeVehicle ? _activeVehicle.usingHighLatencyLink : false)
-
-        property real bottomEdgeLeftInset:     parent.height-y
-        property bool autoCenterThrottle:      QGroundControl.settingsManager.appSettings.virtualJoystickAutoCenterThrottle.rawValue
-        property bool _virtualJoystickEnabled: QGroundControl.settingsManager.appSettings.virtualJoystick.rawValue
-        property real bottomEdgeRightInset:    parent.height-y
-        property var  _pipViewMargin:          _pipView.visible ? parentToolInsets.bottomEdgeLeftInset + ScreenTools.defaultFontPixelHeight * 2 : 
-                                               bottomRightRowLayout.height + ScreenTools.defaultFontPixelHeight * 1.5
-
-        property var  bottomLoaderMargin:      _pipViewMargin >= parent.height / 2 ? parent.height / 2 : _pipViewMargin
-
-        // Width is difficult to access directly hence this hack which may not work in all circumstances
-        property real leftEdgeBottomInset:  visible ? bottomEdgeLeftInset + width/18 - ScreenTools.defaultFontPixelHeight*2 : 0
-        property real rightEdgeBottomInset: visible ? bottomEdgeRightInset + width/18 - ScreenTools.defaultFontPixelHeight*2 : 0
-        property real rootWidth:            _root.width
-        property var  itemX:                virtualJoystickMultiTouch.x   // real X on screen
-
-        onRootWidthChanged: virtualJoystickMultiTouch.status == Loader.Ready && visible ? virtualJoystickMultiTouch.item.uiTotalWidth = rootWidth : undefined
-        onItemXChanged:     virtualJoystickMultiTouch.status == Loader.Ready && visible ? virtualJoystickMultiTouch.item.uiRealX = itemX : undefined
-
-        //Loader status logic
-        onLoaded: {
-            if (virtualJoystickMultiTouch.visible) {
-                virtualJoystickMultiTouch.item.calibration = true 
-                virtualJoystickMultiTouch.item.uiTotalWidth = rootWidth
-                virtualJoystickMultiTouch.item.uiRealX = itemX
-            } else {
-                virtualJoystickMultiTouch.item.calibration = false
-            }
-        }
-    }
+    // TODO [PlanetIX]: Virtual joystick removed, but
+    // virtualJoystickAutoCenterThrottle and virtualJoystick
+    // facts in AppSettings.h are still present - need to remove them?
 
     FlyViewToolStrip {
         id:                     toolStrip
