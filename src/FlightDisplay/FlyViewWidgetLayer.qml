@@ -305,29 +305,25 @@ Item {
 
                     LabelledLabel {
                         label:      qsTr("Voltage")
-                        labelText:  object.voltage.valueString + " " + object.voltage.units
+                        labelText:  object.voltage.value.toFixed(1) + " " + object.voltage.units
                         fontSize:   ScreenTools.defaultFontPointSize * incrementFontIndex
+                        labelColor: (object.voltage.value < 46) ? "red" : ((object.voltage.value < 47) ? "yellow" : "green")
                     }
 
                     LabelledLabel {
-                        label:      qsTr("Consumed")
-                        labelText:  object.mahConsumed.valueString + " " + object.mahConsumed.units
-                        visible:    batteryValuesAvailable.mahConsumedAvailable
-                        fontSize:   ScreenTools.defaultFontPointSize * incrementFontIndex
-                    }
-
-                    LabelledLabel {
-                        label:     qsTr("Temperature")
-                        labelText: object.temperature.valueString + " " + object.temperature.units
-                        visible:   false // Planet IX: it is not used // batteryValuesAvailable.temperatureAvailable
+                        label:     qsTr("Current")
+                        labelText: object.current.value.toFixed(1) + " " + object.current.units
+                        visible:   batteryValuesAvailable.currentAvailable
                         fontSize:  ScreenTools.defaultFontPointSize * incrementFontIndex
                     }
 
                     LabelledLabel {
-                        label:      qsTr("Function")
-                        labelText:  object.function.enumStringValue
-                        visible:    batteryValuesAvailable.showFunction
+                        label:      qsTr("Consumed")
+                        // object.mahConsumed.units is in mAh, and Ah unit is desirable, so divide by 1000
+                        labelText:  (object.mahConsumed.value / 1000).toFixed(1) + " " + "Ah"
+                        visible:    batteryValuesAvailable.mahConsumedAvailable
                         fontSize:   ScreenTools.defaultFontPointSize * incrementFontIndex
+                        labelColor: ((object.mahConsumed.value / 1000) < 15) ? "green" : (((object.mahConsumed.value / 1000) < 18) ? "yellow" : "red")
                     }
                 }
             }

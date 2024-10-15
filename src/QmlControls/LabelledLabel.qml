@@ -17,7 +17,8 @@ RowLayout {
     property real fontSize: ScreenTools.defaultFontPointSize
 
     property alias label:                   _labelLabel.text
-    property alias labelText:              _label.text
+    property alias labelText:               _label.text
+    property alias labelColor:              _label.color
     property real  labelPreferredWidth:    -1
 
     spacing: ScreenTools.defaultFontPixelWidth * 2
