@@ -214,7 +214,7 @@ Item {
                                         id: backgroundOfMessageText
                                         width:  scrollableMessageArea.width
                                         height: scrollableMessageArea.height
-                                        color:  "black"
+                                        color:  qgcPal.window
                                     }
             visible:                true
             focus:                  true
