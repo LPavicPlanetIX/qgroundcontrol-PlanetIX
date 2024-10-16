@@ -116,4 +116,53 @@ ColumnLayout {
             }
         }
     }
+
+    // Flight (vehicle) Info
+    Item {
+        id: flightContentComponent
+        Layout.alignment: Qt.AlignTop
+
+        visible: _activeVehicle && _activeVehicle.vehicle !== undefined
+
+        ColumnLayout {
+            id: flightContentComponentColumnLayout
+            spacing: ScreenTools.defaultFontPixelHeight / 2
+
+            Component {
+                id: flightValuesAvailableComponent
+
+                QtObject {
+                    property bool airSpeedAvailable: _activeVehicle && _activeVehicle.vehicle ? !isNaN(_activeVehicle.vehicle.airSpeed.rawValue) : false
+                }
+            }
+
+            SettingsGroupLayout {
+                heading: qsTr("Flight Information")
+                contentSpacing: 0
+                showDividers: false
+                layoutColor: qgcPal.window
+                headingFontSize: ScreenTools.defaultFontPointSize * 1.15
+
+                // Declare the property to store the loaded component
+                property var flightValuesAvailable
+
+                Loader {
+                    id: flightValuesAvailableLoader
+                    sourceComponent: flightValuesAvailableComponent
+                    onLoaded: {
+                        flightValuesAvailable = flightValuesAvailableLoader.item
+                    }
+                }
+
+                LabelledLabel {
+                    label: qsTr("Airspeed")
+                    labelText: _activeVehicle && _activeVehicle.vehicle ? _activeVehicle.vehicle.airSpeed.value.toFixed(1) + " " + _activeVehicle.vehicle.airSpeed.units : "N/A"
+                    // visible: flightValuesAvailableLoader.status === Loader.Ready && flightValuesAvailableLoader.item && flightValuesAvailable.airSpeedAvailable
+                    visible:    true
+                    fontSize: ScreenTools.defaultFontPointSize * 1.15
+                    // labelColor: (_activeVehicle && _activeVehicle.vehicle && _activeVehicle.vehicle.airSpeed.value > 50) ? "red" : "green"
+                }
+            }
+        }
+    }
 }
