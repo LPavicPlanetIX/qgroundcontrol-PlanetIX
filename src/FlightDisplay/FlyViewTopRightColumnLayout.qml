@@ -134,6 +134,7 @@ ColumnLayout {
 
                 QtObject {
                     property bool airSpeedAvailable: _activeVehicle && _activeVehicle.vehicle ? !isNaN(_activeVehicle.vehicle.airSpeed.rawValue) : false
+                    property bool groundSpeedAvailable: _activeVehicle && _activeVehicle.vehicle ? !isNaN(_activeVehicle.vehicle.groundSpeed.rawValue) : false
                 }
             }
 
@@ -170,6 +171,15 @@ ColumnLayout {
                                 : (_activeVehicle.vehicle.airSpeed.value > 21 && _activeVehicle.vehicle.airSpeed.value <= 23)
                                 ? "green"
                                 : "red"
+                }
+
+                LabelledLabel {
+                    label: qsTr("Groundspeed")
+                    labelText: _activeVehicle && _activeVehicle.vehicle ? _activeVehicle.vehicle.groundSpeed.value.toFixed(1) + " " + _activeVehicle.vehicle.groundSpeed.units : "N/A"
+                    visible: flightValuesAvailableLoader.status === Loader.Ready 
+                            && flightSettingsGroup.flightValuesAvailable
+                            && flightSettingsGroup.flightValuesAvailable.groundSpeedAvailable
+                    fontSize: ScreenTools.defaultFontPointSize * 1.15
                 }
             }
         }
