@@ -141,11 +141,13 @@ ColumnLayout {
             SettingsGroupLayout {
                 id: flightSettingsGroup
 
+                property real incrementFontIndex:    1.15
+
                 heading: qsTr("Flight Information")
                 contentSpacing: 0
                 showDividers: false
                 layoutColor: qgcPal.window
-                headingFontSize: ScreenTools.defaultFontPointSize * 1.15
+                headingFontSize: ScreenTools.defaultFontPointSize * incrementFontIndex
 
                 property var flightValuesAvailable
 
@@ -163,13 +165,15 @@ ColumnLayout {
                     visible: flightValuesAvailableLoader.status === Loader.Ready 
                             && flightSettingsGroup.flightValuesAvailable
                             && flightSettingsGroup.flightValuesAvailable.airSpeedAvailable
-                    fontSize: ScreenTools.defaultFontPointSize * 1.15
-                    labelColor: (_activeVehicle.vehicle.airSpeed.value > 25 || _activeVehicle.vehicle.airSpeed.value <= 18)
-                                ? "red"
-                                : (_activeVehicle.vehicle.airSpeed.value > 23 || _activeVehicle.vehicle.airSpeed.value <= 21)
-                                ? "yellow"
-                                : (_activeVehicle.vehicle.airSpeed.value > 21 && _activeVehicle.vehicle.airSpeed.value <= 23)
-                                ? "green"
+                    fontSize: ScreenTools.defaultFontPointSize * flightSettingsGroup.incrementFontIndex
+                    labelColor: _activeVehicle && _activeVehicle.vehicle 
+                                ? (_activeVehicle.vehicle.airSpeed.value > 25 || _activeVehicle.vehicle.airSpeed.value <= 18)
+                                    ? "red"
+                                    : (_activeVehicle.vehicle.airSpeed.value > 23 || _activeVehicle.vehicle.airSpeed.value <= 21)
+                                    ? "yellow"
+                                    : (_activeVehicle.vehicle.airSpeed.value > 21 && _activeVehicle.vehicle.airSpeed.value <= 23)
+                                    ? "green"
+                                    : "red"
                                 : "red"
                 }
 
@@ -179,7 +183,7 @@ ColumnLayout {
                     visible: flightValuesAvailableLoader.status === Loader.Ready 
                             && flightSettingsGroup.flightValuesAvailable
                             && flightSettingsGroup.flightValuesAvailable.groundSpeedAvailable
-                    fontSize: ScreenTools.defaultFontPointSize * 1.15
+                    fontSize: ScreenTools.defaultFontPointSize * flightSettingsGroup.incrementFontIndex
                 }
             }
         }
