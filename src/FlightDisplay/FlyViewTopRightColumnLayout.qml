@@ -163,7 +163,13 @@ ColumnLayout {
                             && flightSettingsGroup.flightValuesAvailable
                             && flightSettingsGroup.flightValuesAvailable.airSpeedAvailable
                     fontSize: ScreenTools.defaultFontPointSize * 1.15
-                    // labelColor: (_activeVehicle && _activeVehicle.vehicle && _activeVehicle.vehicle.airSpeed.value > 50) ? "red" : "green"
+                    labelColor: (_activeVehicle.vehicle.airSpeed.value > 25 || _activeVehicle.vehicle.airSpeed.value <= 18)
+                                ? "red"
+                                : (_activeVehicle.vehicle.airSpeed.value > 23 || _activeVehicle.vehicle.airSpeed.value <= 21)
+                                ? "yellow"
+                                : (_activeVehicle.vehicle.airSpeed.value > 21 && _activeVehicle.vehicle.airSpeed.value <= 23)
+                                ? "green"
+                                : "red"
                 }
             }
         }
