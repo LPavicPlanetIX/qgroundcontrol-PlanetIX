@@ -117,11 +117,12 @@ ColumnLayout {
         }
     }
 
-    // Flight (vehicle) Info
+    // Flight Info
     Item {
         id: flightContentComponent
         Layout.alignment: Qt.AlignTop
 
+        // activeVehicle.vehicle is fact of the vehicle that contains some data of the vehicle, like airSpeed
         visible: _activeVehicle && _activeVehicle.vehicle !== undefined
 
         ColumnLayout {
@@ -137,28 +138,30 @@ ColumnLayout {
             }
 
             SettingsGroupLayout {
+                id: flightSettingsGroup
+
                 heading: qsTr("Flight Information")
                 contentSpacing: 0
                 showDividers: false
                 layoutColor: qgcPal.window
                 headingFontSize: ScreenTools.defaultFontPointSize * 1.15
 
-                // Declare the property to store the loaded component
                 property var flightValuesAvailable
 
                 Loader {
                     id: flightValuesAvailableLoader
                     sourceComponent: flightValuesAvailableComponent
                     onLoaded: {
-                        flightValuesAvailable = flightValuesAvailableLoader.item
+                        flightSettingsGroup.flightValuesAvailable = flightValuesAvailableLoader.item
                     }
                 }
 
                 LabelledLabel {
                     label: qsTr("Airspeed")
                     labelText: _activeVehicle && _activeVehicle.vehicle ? _activeVehicle.vehicle.airSpeed.value.toFixed(1) + " " + _activeVehicle.vehicle.airSpeed.units : "N/A"
-                    // visible: flightValuesAvailableLoader.status === Loader.Ready && flightValuesAvailableLoader.item && flightValuesAvailable.airSpeedAvailable
-                    visible:    true
+                    visible: flightValuesAvailableLoader.status === Loader.Ready 
+                            && flightSettingsGroup.flightValuesAvailable
+                            && flightSettingsGroup.flightValuesAvailable.airSpeedAvailable
                     fontSize: ScreenTools.defaultFontPointSize * 1.15
                     // labelColor: (_activeVehicle && _activeVehicle.vehicle && _activeVehicle.vehicle.airSpeed.value > 50) ? "red" : "green"
                 }
