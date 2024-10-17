@@ -117,6 +117,7 @@ ColumnLayout {
         }
     }
 
+    // TODO [lpavic]: Show statts even if they are NaN, if they are, color them to red
     // Flight Info
     Item {
         id: flightContentComponent
@@ -135,6 +136,11 @@ ColumnLayout {
                 QtObject {
                     property bool airSpeedAvailable: _activeVehicle && _activeVehicle.vehicle ? !isNaN(_activeVehicle.vehicle.airSpeed.rawValue) : false
                     property bool groundSpeedAvailable: _activeVehicle && _activeVehicle.vehicle ? !isNaN(_activeVehicle.vehicle.groundSpeed.rawValue) : false
+                    property bool distanceToHomeAvailable: _activeVehicle && _activeVehicle.vehicle ? !isNaN(_activeVehicle.vehicle.distanceToHome.rawValue) : false
+                    property bool altitudeRelativeAvailable: _activeVehicle && _activeVehicle.vehicle ? !isNaN(_activeVehicle.vehicle.altitudeRelative.rawValue) : false
+                    property bool altitudeAboveTerrAvailable: _activeVehicle && _activeVehicle.vehicle ? !isNaN(_activeVehicle.vehicle.altitudeAboveTerr.rawValue) : false
+                    property bool altitudeAMSLAvailable: _activeVehicle && _activeVehicle.vehicle ? !isNaN(_activeVehicle.vehicle.altitudeAMSL.rawValue) : false
+                    property bool throttlePctAvailable: _activeVehicle && _activeVehicle.vehicle ? !isNaN(_activeVehicle.vehicle.throttlePct.rawValue) : false
                 }
             }
 
@@ -185,6 +191,68 @@ ColumnLayout {
                             && flightSettingsGroup.flightValuesAvailable.groundSpeedAvailable
                     fontSize: ScreenTools.defaultFontPointSize * flightSettingsGroup.incrementFontIndex
                 }
+
+                LabelledLabel {
+                    label: qsTr("Distance To Home")
+                    labelText: _activeVehicle && _activeVehicle.vehicle ? _activeVehicle.vehicle.distanceToHome.value.toFixed(1) + " " + _activeVehicle.vehicle.distanceToHome.units : "N/A"
+                    visible: flightValuesAvailableLoader.status === Loader.Ready 
+                            && flightSettingsGroup.flightValuesAvailable
+                            && flightSettingsGroup.flightValuesAvailable.distanceToHomeAvailable
+                    fontSize: ScreenTools.defaultFontPointSize * flightSettingsGroup.incrementFontIndex
+                }
+
+                LabelledLabel {
+                    label: qsTr("Relative Altitude")
+                    labelText: _activeVehicle && _activeVehicle.vehicle ? _activeVehicle.vehicle.altitudeRelative.value.toFixed(1) + " " + _activeVehicle.vehicle.altitudeRelative.units : "N/A"
+                    visible: flightValuesAvailableLoader.status === Loader.Ready 
+                            && flightSettingsGroup.flightValuesAvailable
+                            && flightSettingsGroup.flightValuesAvailable.altitudeRelativeAvailable
+                    fontSize: ScreenTools.defaultFontPointSize * flightSettingsGroup.incrementFontIndex
+                    labelColor: _activeVehicle && _activeVehicle.vehicle 
+                                ? (_activeVehicle.vehicle.altitudeRelative.value < 50)
+                                    ? "red" : "green"
+                                : "red"
+                }
+
+                LabelledLabel {
+                    label: qsTr("Altitude Above Terrain")
+                    labelText: _activeVehicle && _activeVehicle.vehicle ? _activeVehicle.vehicle.altitudeAboveTerr.value.toFixed(1) + " " + _activeVehicle.vehicle.altitudeAboveTerr.units : "N/A"
+                    visible: flightValuesAvailableLoader.status === Loader.Ready 
+                            && flightSettingsGroup.flightValuesAvailable
+                            && flightSettingsGroup.flightValuesAvailable.altitudeAboveTerrAvailable
+                    fontSize: ScreenTools.defaultFontPointSize * flightSettingsGroup.incrementFontIndex
+                    labelColor: _activeVehicle && _activeVehicle.vehicle 
+                                ? (_activeVehicle.vehicle.altitudeRelative.value < 50)
+                                    ? "red" : "green"
+                                : "red"
+                }
+
+                LabelledLabel {
+                    label: qsTr("Altitude AMSL")
+                    labelText: _activeVehicle && _activeVehicle.vehicle ? _activeVehicle.vehicle.altitudeAMSL.value.toFixed(1) + " " + _activeVehicle.vehicle.altitudeAMSL.units : "N/A"
+                    visible: flightValuesAvailableLoader.status === Loader.Ready 
+                            && flightSettingsGroup.flightValuesAvailable
+                            && flightSettingsGroup.flightValuesAvailable.altitudeAMSLAvailable
+                    fontSize: ScreenTools.defaultFontPointSize * flightSettingsGroup.incrementFontIndex
+                }
+
+                LabelledLabel {
+                    label: qsTr("Throttle")
+                    labelText: _activeVehicle && _activeVehicle.vehicle ? _activeVehicle.vehicle.throttlePct.value.toFixed(1) + " " + _activeVehicle.vehicle.throttlePct.units : "N/A"
+                    visible: flightValuesAvailableLoader.status === Loader.Ready 
+                            && flightSettingsGroup.flightValuesAvailable
+                            && flightSettingsGroup.flightValuesAvailable.throttlePctAvailable
+                    fontSize: ScreenTools.defaultFontPointSize * flightSettingsGroup.incrementFontIndex
+                }
+
+                // TODO [lpavic]: Investigate getting photo numbers - StructureScanEditor.qml uses missionItem, here is undefined?
+                // LabelledLabel {
+                //     label: qsTr("Photos taken")
+                //     labelText: _activeVehicle && _activeVehicle.vehicle ? missionItem.cameraShots : "N/A"
+                //     visible: flightValuesAvailableLoader.status === Loader.Ready 
+                //             && flightSettingsGroup.flightValuesAvailable
+                //     fontSize: ScreenTools.defaultFontPointSize * flightSettingsGroup.incrementFontIndex
+                // }
             }
         }
     }

@@ -111,7 +111,7 @@ Item {
         utmspSliderTrigger:         utmspActTrigger
     }
 
-    // TODO [PlanetIX]: Virtual joystick removed, but
+    // TODO [lpavic]: Virtual joystick removed, but
     // virtualJoystickAutoCenterThrottle and virtualJoystick
     // facts in AppSettings.h are still present - need to remove them?
 
