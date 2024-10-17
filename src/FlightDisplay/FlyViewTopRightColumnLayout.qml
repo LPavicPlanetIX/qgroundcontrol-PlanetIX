@@ -141,6 +141,9 @@ ColumnLayout {
                     property bool altitudeAboveTerrAvailable: _activeVehicle && _activeVehicle.vehicle ? !isNaN(_activeVehicle.vehicle.altitudeAboveTerr.rawValue) : false
                     property bool altitudeAMSLAvailable: _activeVehicle && _activeVehicle.vehicle ? !isNaN(_activeVehicle.vehicle.altitudeAMSL.rawValue) : false
                     property bool throttlePctAvailable: _activeVehicle && _activeVehicle.vehicle ? !isNaN(_activeVehicle.vehicle.throttlePct.rawValue) : false
+
+                    property bool gpsSateliteNumberAvailable: _activeVehicle && _activeVehicle.gps ? !isNaN(_activeVehicle.gps.count.rawValue) : false
+                    property bool gpsFixAvailable: _activeVehicle && _activeVehicle.gps ? !isNaN(_activeVehicle.gps.lock.rawValue) : false
                 }
             }
 
@@ -253,6 +256,24 @@ ColumnLayout {
                 //             && flightSettingsGroup.flightValuesAvailable
                 //     fontSize: ScreenTools.defaultFontPointSize * flightSettingsGroup.incrementFontIndex
                 // }
+
+                LabelledLabel {
+                    label: qsTr("GPS Satelite number")
+                    labelText: _activeVehicle && _activeVehicle.gps ? _activeVehicle.gps.count.value : "N/A"
+                    visible: flightValuesAvailableLoader.status === Loader.Ready 
+                            && flightSettingsGroup.flightValuesAvailable
+                            && flightSettingsGroup.flightValuesAvailable.gpsSateliteNumberAvailable
+                    fontSize: ScreenTools.defaultFontPointSize * flightSettingsGroup.incrementFontIndex
+                }
+
+                LabelledLabel {
+                    label: qsTr("GPS fix")
+                    labelText: _activeVehicle && _activeVehicle.gps ? _activeVehicle.gps.lock.enumStringValue : "N/A"
+                    visible: flightValuesAvailableLoader.status === Loader.Ready 
+                            && flightSettingsGroup.flightValuesAvailable
+                            && flightSettingsGroup.flightValuesAvailable.gpsFixAvailable
+                    fontSize: ScreenTools.defaultFontPointSize * flightSettingsGroup.incrementFontIndex
+                }
             }
         }
     }
