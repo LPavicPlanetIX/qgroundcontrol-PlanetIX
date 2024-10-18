@@ -288,6 +288,13 @@ ColumnLayout {
                             && flightSettingsGroup.flightValuesAvailable.gpsFixAvailable
                     fontSize: ScreenTools.defaultFontPointSize * flightSettingsGroup.incrementFontIndex
                 }
+
+                LabelledLabel {
+                    label: qsTr("Flight Mode")
+                    labelText: _activeVehicle ? _activeVehicle.flightMode : "N/A"
+                    visible: flightValuesAvailableLoader.status === Loader.Ready 
+                    fontSize: ScreenTools.defaultFontPointSize * flightSettingsGroup.incrementFontIndex
+                }
             }
         }
     }
