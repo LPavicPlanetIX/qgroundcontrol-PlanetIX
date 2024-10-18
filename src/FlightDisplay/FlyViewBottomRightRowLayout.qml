@@ -15,10 +15,9 @@ import QGroundControl.Controls
 import QGroundControl.FlightDisplay
 
 RowLayout {
-    TelemetryValuesBar {
-        Layout.alignment:   Qt.AlignBottom
-        extraWidth:         instrumentPanel.extraValuesWidth
-    }
+    // TODO [lpavic]: TelemetryValuesBar removed, but
+    // TelemetryValuesBar.qml file still exists with
+    // its components - need to remove them?
 
     FlyViewInstrumentPanel {
         id:         instrumentPanel
