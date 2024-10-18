@@ -39,9 +39,6 @@ ColumnLayout {
                 id: batteryValuesAvailableComponent
 
                 QtObject {
-                    property bool functionAvailable:         battery.function.rawValue !== MAVLink.MAV_BATTERY_FUNCTION_UNKNOWN
-                    property bool showFunction:              functionAvailable && battery.function.rawValue != MAVLink.MAV_BATTERY_FUNCTION_ALL
-                    property bool temperatureAvailable:      !isNaN(battery.temperature.rawValue)
                     property bool currentAvailable:          !isNaN(battery.current.rawValue)
                     property bool mahConsumedAvailable:      !isNaN(battery.mahConsumed.rawValue)
                     property bool timeRemainingAvailable:    !isNaN(battery.timeRemaining.rawValue)
