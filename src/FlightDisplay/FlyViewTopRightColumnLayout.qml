@@ -145,6 +145,9 @@ ColumnLayout {
 
                     property bool gpsSateliteNumberAvailable: _activeVehicle && _activeVehicle.gps ? !isNaN(_activeVehicle.gps.count.rawValue) : false
                     property bool gpsFixAvailable: _activeVehicle && _activeVehicle.gps ? !isNaN(_activeVehicle.gps.lock.rawValue) : false
+
+                    property bool windDirectionAvailable: _activeVehicle && _activeVehicle.wind ? !isNaN(_activeVehicle.wind.direction.rawValue) : false
+                    property bool windSpeedAvailable: _activeVehicle && _activeVehicle.wind ? !isNaN(_activeVehicle.wind.speed.rawValue) : false
                 }
             }
 
@@ -293,6 +296,24 @@ ColumnLayout {
                     label: qsTr("Flight Mode")
                     labelText: _activeVehicle ? _activeVehicle.flightMode : "N/A"
                     visible: flightValuesAvailableLoader.status === Loader.Ready 
+                    fontSize: ScreenTools.defaultFontPointSize * flightSettingsGroup.incrementFontIndex
+                }
+
+                LabelledLabel {
+                    label: qsTr("Wind Direction")
+                    labelText: _activeVehicle && _activeVehicle.wind ? _activeVehicle.wind.direction.value : "N/A"
+                    visible: flightValuesAvailableLoader.status === Loader.Ready 
+                            && flightSettingsGroup.flightValuesAvailable
+                            && flightSettingsGroup.flightValuesAvailable.windDirectionAvailable
+                    fontSize: ScreenTools.defaultFontPointSize * flightSettingsGroup.incrementFontIndex
+                }
+
+                LabelledLabel {
+                    label: qsTr("Wind Speed")
+                    labelText: _activeVehicle && _activeVehicle.wind ? _activeVehicle.wind.speed.value : "N/A"
+                    visible: flightValuesAvailableLoader.status === Loader.Ready 
+                            && flightSettingsGroup.flightValuesAvailable
+                            && flightSettingsGroup.flightValuesAvailable.windSpeedAvailable
                     fontSize: ScreenTools.defaultFontPointSize * flightSettingsGroup.incrementFontIndex
                 }
             }
