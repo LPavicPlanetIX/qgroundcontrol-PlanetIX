@@ -68,46 +68,83 @@ ColumnLayout {
 
                     LabelledLabel {
                         label:      qsTr("Charge State")
-                        labelText:  object.chargeState.enumStringValue
-                        visible:    batteryValuesAvailable.chargeStateAvailable
+                        labelText:  _activeVehicle && batteryValuesAvailable.chargeStateAvailable
+                                    ? object.chargeState.enumStringValue
+                                    : "N/A"
+                        visible:    _activeVehicle
                         fontSize:   ScreenTools.defaultFontPointSize * incrementFontIndex
+                        labelColor: _activeVehicle && batteryValuesAvailable.chargeStateAvailable
+                                    ? qgcPal.text
+                                    : "red"
                     }
 
                     LabelledLabel {
                         label:      qsTr("Remaining")
-                        labelText:  object.timeRemainingStr.value
-                        visible:    batteryValuesAvailable.timeRemainingAvailable
+                        labelText:  _activeVehicle && batteryValuesAvailable.timeRemainingAvailable
+                                    ? object.timeRemainingStr.value
+                                    : "N/A"
+                        visible:    _activeVehicle
                         fontSize:   ScreenTools.defaultFontPointSize * incrementFontIndex
+                        labelColor: _activeVehicle && batteryValuesAvailable.timeRemainingAvailable
+                                    ? qgcPal.text
+                                    : "red"
                     }
 
                     LabelledLabel {
                         label:      qsTr("Remaining")
-                        labelText:  object.percentRemaining.valueString + " " + object.percentRemaining.units
-                        visible:    batteryValuesAvailable.percentRemainingAvailable
-                        fontSize: ScreenTools.defaultFontPointSize * incrementFontIndex
+                        labelText:  _activeVehicle && batteryValuesAvailable.percentRemainingAvailable
+                                    ? object.percentRemaining.valueString + " " + object.percentRemaining.units
+                                    : "N/A"
+                        visible:    _activeVehicle
+                        fontSize:   ScreenTools.defaultFontPointSize * incrementFontIndex
+                        labelColor: _activeVehicle && batteryValuesAvailable.percentRemainingAvailable
+                                    ? qgcPal.text
+                                    : "red"
                     }
 
                     LabelledLabel {
                         label:      qsTr("Voltage")
-                        labelText:  object.voltage.value.toFixed(1) + " " + object.voltage.units
+                        labelText:  _activeVehicle
+                                    ? object.voltage.value.toFixed(1) + " " + object.voltage.units
+                                    : "N/A"
+                        visible:    _activeVehicle
                         fontSize:   ScreenTools.defaultFontPointSize * incrementFontIndex
-                        labelColor: (object.voltage.value < 46) ? "red" : ((object.voltage.value < 47) ? "yellow" : "green")
+                        labelColor: _activeVehicle
+                                    ? (object.voltage.value < 46)
+                                        ? "red"
+                                        : ((object.voltage.value < 47)
+                                        ? "yellow"
+                                        : "green")
+                                    : "red"
                     }
 
                     LabelledLabel {
-                        label:     qsTr("Current")
-                        labelText: object.current.value.toFixed(1) + " " + object.current.units
-                        visible:   batteryValuesAvailable.currentAvailable
-                        fontSize:  ScreenTools.defaultFontPointSize * incrementFontIndex
+                        label:      qsTr("Current")
+                        labelText:  _activeVehicle && batteryValuesAvailable.currentAvailable
+                                    ? object.current.value.toFixed(1) + " " + object.current.units
+                                    : "N/A"
+                        visible:    _activeVehicle
+                        fontSize:   ScreenTools.defaultFontPointSize * incrementFontIndex
+                        labelColor: _activeVehicle && batteryValuesAvailable.currentAvailable
+                                    ? qgcPal.text
+                                    : "red"
                     }
 
                     LabelledLabel {
                         label:      qsTr("Consumed")
                         // object.mahConsumed.units is in mAh, and Ah unit is desirable, so divide by 1000
-                        labelText:  (object.mahConsumed.value / 1000).toFixed(1) + " " + "Ah"
-                        visible:    batteryValuesAvailable.mahConsumedAvailable
+                        labelText:  _activeVehicle && batteryValuesAvailable.mahConsumedAvailable
+                                    ? (object.mahConsumed.value / 1000).toFixed(1) + " " + "Ah"
+                                    : "N/A"
+                        visible:    _activeVehicle
                         fontSize:   ScreenTools.defaultFontPointSize * incrementFontIndex
-                        labelColor: ((object.mahConsumed.value / 1000) < 15) ? "green" : (((object.mahConsumed.value / 1000) < 18) ? "yellow" : "red")
+                        labelColor: _activeVehicle && batteryValuesAvailable.mahConsumedAvailable
+                                    ? ((object.mahConsumed.value / 1000) < 15)
+                                        ? "green"
+                                        : (((object.mahConsumed.value / 1000) < 18)
+                                        ? "yellow"
+                                        : "red")
+                                    : "red"
                     }
                 }
             }
