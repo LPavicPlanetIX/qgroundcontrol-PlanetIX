@@ -332,10 +332,14 @@ ColumnLayout {
                 // TODO [lpavic]: Investigate getting photo numbers - StructureScanEditor.qml uses missionItem, here is undefined?
                 // LabelledLabel {
                 //     label: qsTr("Photos taken")
-                //     labelText: _activeVehicle && _activeVehicle.vehicle ? missionItem.cameraShots : "N/A"
-                //     visible: flightValuesAvailableLoader.status === Loader.Ready 
-                //             && flightSettingsGroup.flightValuesAvailable
+                //     labelText: _activeVehicle
+                //                   ? missionItem.cameraShots
+                //                   : "N/A"
+                //     visible: _activeVehicle
                 //     fontSize: ScreenTools.defaultFontPointSize * flightSettingsGroup.incrementFontIndex
+                //     labelColor: _activeVehicle && missionItem
+                //                 ? qgcPal.text
+                //                 : "red"
                 // }
 
                 LabelledLabel {
